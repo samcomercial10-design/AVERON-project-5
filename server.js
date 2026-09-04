@@ -1095,7 +1095,7 @@ app.post('/api/auth/password/recover',async(req,res)=>{
   if(!supabaseConfigured())return res.status(503).json({error:'Customer authentication is not configured.'});
   const email=safeText(req.body?.email,160).toLowerCase();
   if(!/^\S+@\S+\.\S+$/.test(email))return res.status(400).json({error:'Enter a valid email address.'});
-  const redirectTo=`${originFor(req)}/`;
+  const redirectTo=`${originFor(req)}/reset-password.html`;
   const result=await supabaseAuthRequest(`/recover?redirect_to=${encodeURIComponent(redirectTo)}`,{method:'POST',body:{email}});
   if(!result.ok){
     const status=result.status===429?429:(result.status>=500?502:400);
