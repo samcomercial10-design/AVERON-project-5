@@ -268,9 +268,14 @@ function safeQty(value) {
   return Number.isFinite(n) ? Math.max(1, Math.min(20, n)) : 1;
 }
 function originFor(req) {
-  const configured = String(process.env.SITE_URL || '').replace(/\/$/, '');
+  const configured = String(process.env.SITE_URL || '').trim().replace(/\/$/, '');
   if (configured) return configured;
-  return `${req.protocol}://${req.get('host')}`;
+  const forwardedProto=String(req.get('x-forwarded-proto')||'').split(',')[0].trim();
+  const forwardedHost=String(req.get('x-forwarded-host')||'').split(',')[0].trim();
+  if(forwardedProto&&forwardedHost)return `${forwardedProto}://${forwardedHost}`.replace(/\/$/,'');
+  const host=String(req.get('host')||'').trim();
+  if(host&&!isLocalRequest(req))return `https://${host}`;
+  return `${req.protocol}://${host}`;
 }
 function orderRefFor(id) {
   const tail = safeText(id, 255).replace(/[^A-Za-z0-9]/g, '').slice(-8).toUpperCase();
@@ -1083,6 +1088,38 @@ app.post('/api/auth/login',async(req,res)=>{
   if(!result.ok)return res.status(result.status===429?429:401).json({error:'Invalid email or password, or the email has not been confirmed yet.'});
   setCustomerCookies(res,result.data);
   return res.json({ok:true,authenticated:true,user:publicCustomerUser(result.data?.user)});
+});
+app.post('/api/auth/password/recover',async(req,res)=>{
+  res.setHeader('Cache-Control','no-store');
+  if(!sameOriginCustomerRequest(req))return res.status(403).json({error:'Request origin rejected.'});
+  if(!supabaseConfigured())return res.status(503).json({error:'Customer authentication is not configured.'});
+  const email=safeText(req.body?.email,160).toLowerCase();
+  if(!/^\S+@\S+\.\S+$/.test(email))return res.status(400).json({error:'Enter a valid email address.'});
+  const redirectTo=`${originFor(req)}/`;
+  const result=await supabaseAuthRequest(`/recover?redirect_to=${encodeURIComponent(redirectTo)}`,{method:'POST',body:{email}});
+  if(!result.ok){
+    const status=result.status===429?429:(result.status>=500?502:400);
+    return res.status(status).json({error:safeText(result.data?.msg||result.data?.error_description||result.data?.message||result.data?.error||'Unable to send the password reset email.',240)});
+  }
+  return res.json({ok:true,message:'If an account exists for that email, a password reset link has been sent.'});
+});
+app.post('/api/auth/password/update',async(req,res)=>{
+  res.setHeader('Cache-Control','no-store');
+  if(!sameOriginCustomerRequest(req))return res.status(403).json({error:'Request origin rejected.'});
+  if(!supabaseConfigured())return res.status(503).json({error:'Customer authentication is not configured.'});
+  const accessToken=safeText(req.body?.access_token||'',5000);
+  const password=String(req.body?.password||'').slice(0,256);
+  if(!accessToken)return res.status(400).json({error:'This password reset link is invalid or incomplete.'});
+  if(password.length<8)return res.status(400).json({error:'Use at least 8 characters for your new password.'});
+  const current=await supabaseAuthRequest('/user',{accessToken});
+  if(!current.ok||!current.data?.id)return res.status(401).json({error:'This password reset link is invalid or has expired. Request a new one.'});
+  const result=await supabaseAuthRequest('/user',{method:'PUT',accessToken,body:{password}});
+  if(!result.ok){
+    const status=result.status>=500?502:400;
+    return res.status(status).json({error:safeText(result.data?.msg||result.data?.error_description||result.data?.message||result.data?.error||'Unable to update your password.',240)});
+  }
+  clearCustomerCookies(res);
+  return res.json({ok:true,message:'Your password has been updated. You can now sign in with your new password.'});
 });
 app.get('/api/auth/google',(req,res)=>{
   if(!supabaseConfigured())return res.redirect('/index.html?account=login&auth_error=not_configured');

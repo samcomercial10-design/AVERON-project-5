@@ -1701,7 +1701,7 @@ html.lightbox-open,html.lightbox-open body{overflow:hidden}
 }
 
 /* Supabase customer account states */
-.account-auth-switch{margin-top:2px}.account-form h4{font-family:var(--serif);font-size:1.45rem;font-weight:500;margin:0 0 8px}.account-form [role=alert]{color:#8d2525}.account-form input:disabled{opacity:.7}
+.account-forgot-password{margin:-4px 0 8px;text-align:left}.account-auth-switch{margin-top:2px}.account-form h4{font-family:var(--serif);font-size:1.45rem;font-weight:500;margin:0 0 8px}.account-form [role=alert]{color:#8d2525}.account-form input:disabled{opacity:.7}
 
 .account-auth-divider{display:flex;align-items:center;gap:12px;color:#8a857d;font-size:10px;text-transform:uppercase;letter-spacing:.12em}.account-auth-divider::before,.account-auth-divider::after{content:'';height:1px;background:var(--grey-line);flex:1}.account-google{text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px}.account-google .google-mark{width:18px;height:18px;display:block;flex:0 0 18px}
 
