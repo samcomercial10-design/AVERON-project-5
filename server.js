@@ -238,11 +238,29 @@ async function getCustomerAuth(req,res,{refresh=true}={}){
   clearCustomerCookies(res);
   return null;
 }
+function requestOriginCandidates(req){
+  const out=new Set();
+  const configured=String(process.env.SITE_URL||'').trim().replace(/\/$/,'');
+  if(configured)out.add(configured);
+
+  const forwardedProto=String(req.get('x-forwarded-proto')||'').split(',')[0].trim();
+  const forwardedHost=String(req.get('x-forwarded-host')||'').split(',')[0].trim();
+  if(forwardedProto&&forwardedHost)out.add(`${forwardedProto}://${forwardedHost}`);
+
+  const host=String(req.get('host')||'').trim();
+  if(host){
+    out.add(`${req.protocol}://${host}`);
+    // Render terminates TLS at its proxy, so Express can see http internally while the browser uses https.
+    if(!isLocalRequest(req))out.add(`https://${host}`);
+  }
+  return [...out].map(v=>v.replace(/\/$/,''));
+}
 function sameOriginCustomerRequest(req){
   if(!['POST','PUT','PATCH','DELETE'].includes(req.method))return true;
-  const origin=String(req.get('origin')||''),referer=String(req.get('referer')||''),expected=originFor(req);
-  if(origin)return origin===expected;
-  if(referer)return referer.startsWith(expected+'/');
+  const origin=String(req.get('origin')||'').replace(/\/$/,''),referer=String(req.get('referer')||'');
+  const expected=requestOriginCandidates(req);
+  if(origin)return expected.includes(origin);
+  if(referer)return expected.some(base=>referer===base||referer.startsWith(base+'/'));
   return isLocalRequest(req);
 }
 function safeQty(value) {
@@ -812,7 +830,7 @@ function adminUserAgentHash(req){return crypto.createHash('sha256').update(Strin
 function getAdminSession(req){const token=parseCookies(req)[ADMIN_COOKIE]||'';if(token.length<40)return null;const now=Math.floor(Date.now()/1000);const row=dbPrepare('SELECT token_hash,email,created,expires,user_agent_hash FROM admin_sessions WHERE token_hash=? AND expires>?').get(adminTokenHash(token),now);if(!row)return null;if(row.user_agent_hash&&row.user_agent_hash!==adminUserAgentHash(req))return null;return{token,...row}}
 function clearAdminCookie(res){res.clearCookie(ADMIN_COOKIE,{httpOnly:true,sameSite:'strict',secure:ADMIN_SECURE_COOKIE,path:'/'})}
 function setAdminCookie(res,token){res.cookie(ADMIN_COOKIE,token,{httpOnly:true,sameSite:'strict',secure:ADMIN_SECURE_COOKIE,path:'/',maxAge:ADMIN_SESSION_HOURS*3600000})}
-function sameOriginAdminRequest(req){if(!['POST','PUT','PATCH','DELETE'].includes(req.method))return true;const origin=String(req.get('origin')||''),referer=String(req.get('referer')||''),expected=originFor(req);if(origin)return origin===expected;if(referer)return referer.startsWith(expected+'/');return isLocalRequest(req)}
+function sameOriginAdminRequest(req){if(!['POST','PUT','PATCH','DELETE'].includes(req.method))return true;const origin=String(req.get('origin')||'').replace(/\/$/,''),referer=String(req.get('referer')||''),expected=requestOriginCandidates(req);if(origin)return expected.includes(origin);if(referer)return expected.some(base=>referer===base||referer.startsWith(base+'/'));return isLocalRequest(req)}
 function requireAdmin(req,res,next){if(!adminConfigured())return res.status(503).json({error:'Admin authentication is not configured on the server.'});const session=getAdminSession(req);if(!session){clearAdminCookie(res);return res.status(401).json({error:'Admin sign-in required.'})}if(!sameOriginAdminRequest(req))return res.status(403).json({error:'Admin request origin rejected.'});req.adminSession=session;res.setHeader('Cache-Control','no-store');next()}
 function requireAdminPage(req,res,next){if(!adminConfigured())return res.redirect('/admin-login.html?setup=1');if(!getAdminSession(req)){clearAdminCookie(res);return res.redirect('/admin-login.html?next='+encodeURIComponent(req.originalUrl||'/admin.html'))}res.setHeader('Cache-Control','no-store');next()}
 function loginAttemptState(req){const key=String(req.ip||req.socket?.remoteAddress||'unknown'),now=Date.now();let state=adminLoginAttempts.get(key);if(!state||now-state.first>900000)state={count:0,first:now,blockedUntil:0};return{key,state,now}}
