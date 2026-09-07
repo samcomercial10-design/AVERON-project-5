@@ -997,6 +997,7 @@ app.use(express.json({limit: '96mb'}));
 // Homepage banner / mini-banner content is persisted server-side so artwork survives
 // refreshes, browser storage limits and different storefront sessions.
 const SITE_CONTENT_FILE = path.join(__dirname, 'site-content.server.json');
+const SITE_LAYOUT_FILE = path.join(__dirname, 'site-layout.server.json');
 function siteContentImage(value){
   const v=String(value||'').trim();
   if(!v)return '';
@@ -1060,6 +1061,25 @@ app.get('/api/site-content',(req,res)=>{
   res.setHeader('Cache-Control','no-store, no-cache, must-revalidate, proxy-revalidate');
   const content=readSiteContent();return res.json({ok:true,initialized:Boolean(content),content:content||null});
 });
+
+function sanitizeSiteLayout(raw){
+  raw=raw&&typeof raw==='object'?raw:{};
+  const src=raw.entries&&typeof raw.entries==='object'?raw.entries:{};
+  const entries={};
+  for(const [id,val] of Object.entries(src).slice(0,1200)){
+    if(!/^[a-z0-9-]{1,120}$/i.test(id))continue;
+    const v=val&&typeof val==='object'?val:{};
+    if(typeof v.text==='string')entries[id]={text:safeText(v.text,500)};
+  }
+  return {entries};
+}
+function readSiteLayout(){
+  try{if(!fs.existsSync(SITE_LAYOUT_FILE))return {entries:{}};return sanitizeSiteLayout(JSON.parse(fs.readFileSync(SITE_LAYOUT_FILE,'utf8')))}catch(err){console.error('Site layout read failed:',err.message);return {entries:{}}}
+}
+function writeSiteLayout(layout){
+  const safe=sanitizeSiteLayout(layout);const tmp=SITE_LAYOUT_FILE+'.tmp';fs.writeFileSync(tmp,JSON.stringify(safe,null,2)+'\n','utf8');fs.renameSync(tmp,SITE_LAYOUT_FILE);return safe;
+}
+app.get('/api/site-layout',(req,res)=>{res.setHeader('Cache-Control','no-store, no-cache, must-revalidate, proxy-revalidate');return res.json({ok:true,layout:readSiteLayout()})});
 
 app.get('/api/auth/session',async(req,res)=>{
   res.setHeader('Cache-Control','no-store');
@@ -1181,6 +1201,11 @@ app.put('/api/admin/site-content',(req,res)=>{
     console.error('Admin site content save failed:',err);
     return res.status(500).json({error:'Could not persist banner content on the server.'});
   }
+});
+
+app.put('/api/admin/site-layout',(req,res)=>{
+  try{const layout=writeSiteLayout(req.body?.layout||{});return res.json({ok:true,layout})}
+  catch(err){console.error('Admin site layout save failed:',err);return res.status(500).json({error:'Could not persist site layout on the server.'})}
 });
 
 
@@ -1499,7 +1524,7 @@ app.use((req, res, next) => {
   // The storefront/admin browser assets are intentionally public; these files are not.
   const blockedFiles = new Set([
     '/server.js','/observability.js','/create-admin-hash.js',
-    '/package.json','/package-lock.json','/products.server.json','/cj-sandbox-map.json','/site-content.server.json',
+    '/package.json','/package-lock.json','/products.server.json','/cj-sandbox-map.json','/site-content.server.json','/site-layout.server.json',
     '/.env','/.env.example','/.gitignore',
     '/averon-orders.db','/averon-orders.db-wal','/averon-orders.db-shm'
   ]);

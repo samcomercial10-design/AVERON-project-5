@@ -1,10 +1,11 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>AVERON · CJ Product Test</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>AVERON · CJ Product Test</title>
+<style>
     :root{--ink:#002f47;--paper:#f4f0e7;--gold:#a97838;--line:#d8d1c4;--white:#fffdf8}
     *{box-sizing:border-box}body{margin:0;background:var(--paper);color:#171717;font-family:Arial,sans-serif}
     main{max-width:1080px;margin:auto;padding:42px 22px 70px}.eyebrow{letter-spacing:.24em;color:var(--gold);font-size:12px;font-weight:700}
@@ -17,13 +18,13 @@
 </head>
 <body>
 <main>
-  <div class="eyebrow">AVERON · CJ INTEGRATION</div>
-  <h1>Product test</h1>
-  <p class="intro">Search CJ products and choose one to load its details and variants. This page is read-only: it does not create an order or make a payment.</p>
-  <form class="search" id="searchForm"><input id="keyword" value="shirt" placeholder="Search: shirt, polo, jacket…"><button>SEARCH CJ</button></form>
-  <div class="status" id="status">Ready.</div>
-  <section class="grid" id="products"></section>
-  <section class="detail" id="detail" hidden><div class="eyebrow">SELECTED PRODUCT</div><h2 id="detailTitle">Product</h2><div class="sandboxBox"><strong>SANDBOX ONLY</strong><div>This test creates a simulated CJ order only. The server forces <code>isSandbox=1</code>, so CJ should not deduct real balance or generate real fulfilment.</div><div class="logistics"><label>Logistics name <input id="logisticName" value="CJPacket Ordinary"></label></div><div class="sandboxControls" id="sandboxControls"><div class="sandboxHint">Sandbox lifecycle for the last order created on this page:</div><button id="confirmOrderBtn" type="button">1 · CONFIRM ORDER</button><button id="simulatePayBtn" type="button" disabled>2 · SIMULATE PAYMENT</button><button id="status400Btn" type="button" disabled>3 · PROCESSING (400)</button><label>Fake tracking <input id="trackNumber" value="AVERON-SBX-TRACK-001"></label><button id="trackBtn" type="button" disabled>4 · ADD TRACKING</button><button id="status500Btn" type="button" disabled>5 · SHIPPED (500)</button></div><pre class="sandboxResult" id="sandboxResult" hidden></pre></div><div id="variants"></div><details><summary>Technical response</summary><pre class="raw" id="raw"></pre></details></section>
+<div class="eyebrow" data-layout-id="cj-products-averon-cj-integration">AVERON · CJ INTEGRATION</div>
+<h1 data-layout-id="cj-products-product-test">Product test</h1>
+<p class="intro" data-layout-id="cj-products-search-cj-products-and-choose-one-to-load-">Search CJ products and choose one to load its details and variants. This page is read-only: it does not create an order or make a payment.</p>
+<form class="search" id="searchForm"><input id="keyword" placeholder="Search: shirt, polo, jacket…" value="shirt"/><button data-layout-id="cj-products-search-cj">SEARCH CJ</button></form>
+<div class="status" data-layout-id="cj-products-ready" id="status">Ready.</div>
+<section class="grid" id="products"></section>
+<section class="detail" hidden="" id="detail"><div class="eyebrow" data-layout-id="cj-products-selected-product">SELECTED PRODUCT</div><h2 data-layout-id="cj-products-product" id="detailTitle">Product</h2><div class="sandboxBox"><strong data-layout-id="cj-products-sandbox-only">SANDBOX ONLY</strong><div>This test creates a simulated CJ order only. The server forces <code>isSandbox=1</code>, so CJ should not deduct real balance or generate real fulfilment.</div><div class="logistics"><label>Logistics name <input id="logisticName" value="CJPacket Ordinary"/></label></div><div class="sandboxControls" id="sandboxControls"><div class="sandboxHint" data-layout-id="cj-products-sandbox-lifecycle-for-the-last-order-creat">Sandbox lifecycle for the last order created on this page:</div><button data-layout-id="cj-products-1-confirm-order" id="confirmOrderBtn" type="button">1 · CONFIRM ORDER</button><button data-layout-id="cj-products-2-simulate-payment" disabled="" id="simulatePayBtn" type="button">2 · SIMULATE PAYMENT</button><button data-layout-id="cj-products-3-processing-400" disabled="" id="status400Btn" type="button">3 · PROCESSING (400)</button><label>Fake tracking <input id="trackNumber" value="AVERON-SBX-TRACK-001"/></label><button data-layout-id="cj-products-4-add-tracking" disabled="" id="trackBtn" type="button">4 · ADD TRACKING</button><button data-layout-id="cj-products-5-shipped-500" disabled="" id="status500Btn" type="button">5 · SHIPPED (500)</button></div><pre class="sandboxResult" hidden="" id="sandboxResult"></pre></div><div id="variants"></div><details><summary>Technical response</summary><pre class="raw" id="raw"></pre></details></section>
 </main>
 <script>
 const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -57,5 +58,6 @@ $('#trackBtn').addEventListener('click',async()=>{const trackNumber=$('#trackNum
 $('#status500Btn').addEventListener('click',async()=>{try{await sandboxAction('/api/admin/cj/sandbox/update-status',{targetStatus:500},$('#status500Btn'));$('#status').textContent='Sandbox order advanced to shipped (500)';$('#status500Btn').disabled=true;}catch{}});
 $('#searchForm').addEventListener('submit',search);$('#products').addEventListener('click',e=>{const b=e.target.closest('[data-pid]');if(b)details(b.dataset.pid)});$('#variants').addEventListener('click',e=>{const b=e.target.closest('[data-sandbox-vid]');if(b)createSandboxOrder(b)});search();
 </script>
+<script src="site-layout.js"></script>
 </body>
 </html>

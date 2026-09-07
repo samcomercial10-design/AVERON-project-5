@@ -127,7 +127,7 @@ body.admin-body{background:var(--admin-bg);color:var(--admin-ink)}
 <div class="admin-shell" id="studio">
   <header class="admin-top">
     <div class="admin-brand"><img src="assets/logo-navy.png" alt="AVERON" width="56" height="56" decoding="async"><div><div class="admin-kicker">Private Area</div><div class="admin-title">Content Studio</div></div></div>
-    <div class="admin-actions"><button class="admin-btn" id="export-btn">Export Catalogue</button><label class="admin-btn" style="cursor:pointer">Import Catalogue<input id="import-file" type="file" accept="application/json" hidden></label><button class="admin-btn" id="new-btn">New Product</button><button class="admin-btn" id="logout-btn">Lock</button></div>
+    <div class="admin-actions"><a class="admin-btn" href="index.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Open Storefront</a><button class="admin-btn" id="export-btn">Export Catalogue</button><label class="admin-btn" style="cursor:pointer">Import Catalogue<input id="import-file" type="file" accept="application/json" hidden></label><button class="admin-btn" id="new-btn">New Product</button><button class="admin-btn" id="logout-btn">Lock</button></div>
   </header>
   <nav class="admin-tabs" aria-label="Content Studio sections">
     <button type="button" class="admin-tab active" data-admin-tab="products">Products</button>
@@ -136,6 +136,7 @@ body.admin-body{background:var(--admin-bg);color:var(--admin-ink)}
     <button type="button" class="admin-tab" data-admin-tab="banners-mobile">Mobile Banners</button>
     <button type="button" class="admin-tab" data-admin-tab="mini-banners-mobile">Mobile Mini Banners</button>
     <button type="button" class="admin-tab" data-admin-tab="orders">Orders</button>
+    <a class="admin-tab" href="admin-layout.html" style="text-decoration:none;display:inline-flex;align-items:center">Site Text</a>
   </nav>
   <section class="admin-panel" data-admin-panel="products">
   <div class="admin-grid">

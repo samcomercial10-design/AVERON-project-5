@@ -156,8 +156,21 @@
     document.querySelectorAll('[data-close-cart]').forEach(b=>b.addEventListener('click',closeCart));
     document.querySelector('[data-overlay]')?.addEventListener('click',closeCart);
     const menu=document.querySelector('[data-mobile-menu]');
-    document.querySelectorAll('[data-open-menu]').forEach(b=>b.addEventListener('click',()=>menu?.classList.add('open')));
-    document.querySelectorAll('[data-close-menu]').forEach(b=>b.addEventListener('click',()=>menu?.classList.remove('open')));
+    if(menu&&!menu.querySelector('.mobile-menu-newsletter')){
+      const box=document.createElement('section');box.className='mobile-menu-newsletter';
+      const kicker=document.createElement('p');kicker.className='eyebrow';kicker.textContent='Join AVERON';
+      const copy=document.createElement('p');copy.className='mobile-menu-newsletter-copy';copy.textContent='Discover new collections, considered essentials and exclusive releases.';
+      const form=document.createElement('form');form.className='mobile-menu-newsletter-form';form.dataset.demoForm='';
+      const input=document.createElement('input');input.type='email';input.required=true;input.autocomplete='email';input.placeholder='Your email address';input.setAttribute('aria-label','Your email address');
+      const join=document.createElement('button');join.type='submit';join.textContent='Join';
+      const note=document.createElement('p');note.className='mobile-menu-newsletter-note';note.textContent='By joining, you agree to receive AVERON emails. Unsubscribe anytime.';
+      form.append(input,join);box.append(kicker,copy,form,note);menu.append(box);
+    }
+    const openMenu=()=>{if(!menu)return;menu.classList.add('open');document.body.style.overflow='hidden'};
+    const closeMenu=()=>{if(!menu)return;menu.classList.remove('open');document.body.style.overflow=''};
+    document.querySelectorAll('[data-open-menu]').forEach(b=>b.addEventListener('click',openMenu));
+    document.querySelectorAll('[data-close-menu]').forEach(b=>b.addEventListener('click',closeMenu));
+    menu?.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',closeMenu));
     // One delegated handler keeps static and dynamically-rendered wishlist buttons in sync.
     document.addEventListener('click',e=>{
       const btn=e.target.closest('[data-wishlist-btn]');

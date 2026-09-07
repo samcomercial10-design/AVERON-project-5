@@ -1843,3 +1843,164 @@ html.lightbox-open,html.lightbox-open body{overflow:hidden}
   .card-figure:hover .card-product-image--cover{opacity:0}
   .card-figure:hover .card-product-image{transform:scale(1.015)}
 }
+
+/* ========================================================================== 
+   AVERON — Mobile homepage alignment + navigation redesign v8
+   Based on the approved mobile layout reference. Desktop is untouched.
+   ========================================================================== */
+@media (max-width:760px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden;}
+
+  /* Prevent the pale edge/seam seen at the right side of mobile banner artwork.
+     The media layer slightly overscans its frame so sub-pixel compositing can
+     never expose the section/background underneath. */
+  [data-content-banner]{overflow:hidden;width:100%;max-width:100%;}
+  [data-content-banner] > [data-banner-media]{
+    inset:-2px !important;
+    width:auto !important;
+    max-width:none !important;
+    background-size:cover !important;
+    background-position:center center !important;
+    background-repeat:no-repeat !important;
+  }
+
+  /* Homepage editorial intro follows the mobile reference: image edge-to-edge,
+     copy centred underneath with deliberate compact spacing. */
+  body[data-seo-page="home"] .editorial{padding:0 0 64px;}
+  body[data-seo-page="home"] .editorial-grid.wrap{padding-left:0;padding-right:0;gap:0;}
+  body[data-seo-page="home"] .editorial-figure{width:100%;aspect-ratio:1080 / 1350 !important;}
+  body[data-seo-page="home"] .editorial-copy{
+    padding:38px 20px 0;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  body[data-seo-page="home"] .editorial-copy .eyebrow{margin:0 !important;}
+  body[data-seo-page="home"] .editorial-copy .h-1{margin:12px auto 0 !important;max-width:21ch;font-size:31px;line-height:.98;letter-spacing:-.015em;}
+  body[data-seo-page="home"] .editorial-copy .body-lg{margin:16px auto 0 !important;max-width:34ch !important;font-size:12px;line-height:1.55;text-align:center;}
+  body[data-seo-page="home"] .editorial-copy .link-underline{margin:16px auto 0 !important;}
+
+  /* Main homepage text groups use centred mobile art direction. */
+  body[data-seo-page="home"] .collection .section-head,
+  body[data-seo-page="home"] .products .section-head,
+  body[data-seo-page="home"] .edit-section .section-head,
+  body[data-seo-page="home"] .philosophy,
+  body[data-seo-page="home"] .newsletter{text-align:center;align-items:center;}
+  body[data-seo-page="home"] .collection .section-head .h-1,
+  body[data-seo-page="home"] .products .section-head .h-1,
+  body[data-seo-page="home"] .edit-section .section-head .h-1{margin-left:auto;margin-right:auto;}
+  body[data-seo-page="home"] .collection .section-head{margin-bottom:30px;}
+  body[data-seo-page="home"] .collection .section-head .h-1{font-size:31px;}
+  body[data-seo-page="home"] .products .section-head .h-1{font-size:31px;line-height:.98;max-width:21ch;}
+  body[data-seo-page="home"] .edit-section .section-head .h-1{font-size:31px;line-height:.98;max-width:24ch;}
+
+  /* Primary mobile headlines should read as broad two-line statements,
+     not narrow stacked text. Explicit <br> breaks in the copy are preserved. */
+  body[data-seo-page="home"] .editorial-copy .h-1,
+  body[data-seo-page="home"] .products .section-head .h-1,
+  body[data-seo-page="home"] .edit-section .section-head .h-1{
+    width:min(100%, 24ch);
+    white-space:normal;
+  }
+
+  /* Keep commerce/card labels readable like the reference; only section-level
+     editorial copy is centred. */
+  body[data-seo-page="home"] .cat-tile-info,
+  body[data-seo-page="home"] .card-meta,
+  body[data-seo-page="home"] .card-name{text-align:left;}
+
+  /* Footer mobile alignment — brand block and footer columns are centred. */
+  footer.site .footer-grid{text-align:center;}
+  footer.site .footer-brand{display:flex;flex-direction:column;align-items:center;text-align:center;}
+  footer.site .footer-brand .footer-wordmark{margin-left:auto;margin-right:auto;object-position:center;}
+  footer.site .footer-brand p{margin-left:auto;margin-right:auto;text-align:center;}
+  footer.site .footer-social{justify-content:center;}
+  footer.site .footer-col{text-align:center;}
+
+  /* Full-screen hamburger menu, matching the approved Photoshop direction. */
+  .mobile-menu{
+    padding:0 20px calc(34px + env(safe-area-inset-bottom));
+    overflow-y:auto;
+    overflow-x:hidden;
+    overscroll-behavior:contain;
+    background:var(--navy);
+  }
+  .mobile-menu-top{
+    position:relative;
+    min-height:180px;
+    margin:0 !important;
+    padding:42px 54px 34px !important;
+    border-bottom:1px solid rgba(251,249,244,.16) !important;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:13px;
+  }
+  .mobile-menu-top::before{
+    content:"";
+    width:56px;
+    height:56px;
+    flex:0 0 56px;
+    background:url("assets/logo-white.png") center/contain no-repeat;
+  }
+  .mobile-menu-top .footer-wordmark{width:164px;height:auto;margin:0;object-fit:contain;}
+  .mobile-menu-top [data-close-menu]{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:46px;height:46px;color:var(--warm-white)!important;}
+  .mobile-menu-top [data-close-menu] svg{width:29px;height:29px;}
+
+  .mobile-menu nav{border:0;margin:60px 0 24px;}
+  .mobile-menu nav a{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    min-height:82px;
+    padding:18px 32px !important;
+    border-bottom:1px solid rgba(251,249,244,.13) !important;
+    font-family:var(--font-serif);
+    font-size:clamp(34px,10vw,46px) !important;
+    line-height:1;
+    letter-spacing:-.02em !important;
+    text-align:center;
+  }
+  .mobile-menu nav a::after{content:"›";font-family:Georgia,serif;font-size:.72em;line-height:1;transform:translateY(-1px);}
+  .mobile-menu nav a[href="product.html"]{display:none!important;}
+
+  .mobile-menu-foot{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:8px !important;
+    margin:22px 0 0 !important;
+    padding:0 0 42px !important;
+  }
+  .mobile-menu .mobile-utility-btn{
+    min-width:0;
+    min-height:58px;
+    width:100%;
+    padding:12px 6px !important;
+    border-color:rgba(251,249,244,.48);
+    font-size:10px !important;
+    letter-spacing:.11em !important;
+  }
+  .mobile-menu-newsletter{
+    border-top:1px solid rgba(251,249,244,.13);
+    padding:38px 8px 12px;
+    text-align:center;
+  }
+  .mobile-menu-newsletter .eyebrow{color:var(--gold-soft);margin-bottom:20px;}
+  .mobile-menu-newsletter-copy{max-width:34ch;margin:0 auto 34px;font-size:14px;line-height:1.65;color:rgba(251,249,244,.68);}
+  .mobile-menu-newsletter-form{display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(251,249,244,.42);padding:0 0 12px;}
+  .mobile-menu-newsletter-form input{flex:1;min-width:0;border:0;background:transparent;color:var(--warm-white);font:inherit;font-size:13px;outline:none;padding:8px 0;}
+  .mobile-menu-newsletter-form input::placeholder{color:rgba(251,249,244,.52);}
+  .mobile-menu-newsletter-form button{border:0;background:transparent;color:var(--gold-soft);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.16em;padding:8px 0;}
+  .mobile-menu-newsletter-note{max-width:36ch;margin:14px auto 0;font-size:10px;line-height:1.55;color:rgba(251,249,244,.45);}
+}
+
+@media (max-width:420px){
+  .mobile-menu-top{min-height:152px;padding-left:38px!important;padding-right:48px!important;gap:10px;}
+  .mobile-menu-top::before{width:48px;height:48px;flex-basis:48px;}
+  .mobile-menu-top .footer-wordmark{width:145px;}
+  .mobile-menu nav{margin-top:42px;}
+  .mobile-menu nav a{min-height:70px;font-size:34px!important;}
+}
