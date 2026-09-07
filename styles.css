@@ -534,7 +534,7 @@ footer.site{ background:var(--navy); color:rgba(251,249,244,.78); padding:90px 0
 
 /* AVERON — functional search, account & wishlist */
 .icon-btn{background:transparent;border:0;padding:0;appearance:none}.icon-btn svg{overflow:visible}.heart-icon{width:19px;height:19px}.wishlist-header-btn.has-items .heart-icon{stroke:var(--gold);fill:rgba(166,138,91,.12)}.card-wishlist{border:0;padding:0}.card-wishlist .heart-icon{width:16px;height:16px}.card-wishlist.active .heart-icon,.pdp-wishlist-link.active .heart-icon{fill:var(--gold);stroke:var(--gold)}.pdp-wishlist-link{background:transparent;border:0;padding:0}.pdp-wishlist-link .heart-icon{width:16px;height:16px}.mobile-utility-btn{font-family:var(--font-sans)!important;font-size:11px!important;padding:12px 20px!important;border:1px solid rgba(255,255,255,.5)!important;background:transparent}
-.utility-drawer{position:fixed;top:0;right:0;height:100%;width:min(520px,100vw);background:var(--warm-white);z-index:96;transform:translateX(100%);transition:transform .5s var(--ease);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,41,63,.10)}.utility-drawer.open{transform:translateX(0)}.utility-head{min-height:112px;padding:28px clamp(24px,4vw,42px);display:flex;align-items:flex-start;justify-content:space-between;gap:24px;border-bottom:1px solid var(--grey-line)}.utility-head h3{font-family:var(--font-serif); letter-spacing:2px;font-size:26px;font-weight:400;margin-top:8px;color:var(--navy)}.utility-close{width:38px;height:38px;border:1px solid var(--grey-line);background:transparent;color:var(--navy);font-size:26px;line-height:1}.utility-body{flex:1;overflow-y:auto;padding:30px clamp(24px,4vw,42px) 44px}
+.utility-drawer{position:fixed;top:0;right:0;height:100%;width:min(520px,100vw);background:var(--warm-white);z-index:96;transform:translateX(100%);transition:transform .5s var(--ease),box-shadow .5s var(--ease);display:flex;flex-direction:column;box-shadow:none}.utility-drawer.open{transform:translateX(0);box-shadow:-20px 0 60px rgba(0,41,63,.10)}.utility-head{min-height:112px;padding:28px clamp(24px,4vw,42px);display:flex;align-items:flex-start;justify-content:space-between;gap:24px;border-bottom:1px solid var(--grey-line)}.utility-head h3{font-family:var(--font-serif); letter-spacing:2px;font-size:26px;font-weight:400;margin-top:8px;color:var(--navy)}.utility-close{width:38px;height:38px;border:1px solid var(--grey-line);background:transparent;color:var(--navy);font-size:26px;line-height:1}.utility-body{flex:1;overflow-y:auto;padding:30px clamp(24px,4vw,42px) 44px}
 .utility-search-box{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--navy);padding-bottom:13px}.utility-search-box svg{width:20px;height:20px}.utility-search-box input{border:0;outline:0;background:transparent;width:100%;font-family:var(--font-serif); letter-spacing:2px;font-size:21px;color:var(--navy)}.utility-hint{margin:12px 0 28px;font-size:11px;color:var(--charcoal-soft)}.search-suggestions{display:flex;flex-wrap:wrap;gap:8px}.search-suggestions .eyebrow{width:100%;margin-bottom:8px}.search-suggestions button{background:transparent;border:1px solid var(--grey-line);padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.08em}.search-count{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--charcoal-soft)}
 .search-result-row{display:grid;grid-template-columns:68px 1fr auto;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--grey-line)}.search-result-thumb{width:68px;height:84px;overflow:hidden}.search-result-thumb img,.wishlist-thumb img{width:100%;height:100%;object-fit:cover}.search-result-row strong{display:block;margin:5px 0;font-family:var(--font-serif); letter-spacing:2px;font-size:16px;font-weight:400}.search-result-row div>span:last-child{font-size:11px;color:var(--charcoal-soft)}.search-arrow{color:var(--gold);font-size:20px}
 .utility-empty{text-align:center;padding:70px 10px}.empty-heart{font-family:Georgia,serif;font-size:48px;color:var(--gold)}.utility-empty h4{font-family:var(--font-serif); letter-spacing:2px;font-size:23px;font-weight:400;color:var(--navy);margin-top:12px}.utility-empty p{font-size:13px;color:var(--charcoal-soft);line-height:1.6;margin:10px auto 24px;max-width:300px}
@@ -1859,7 +1859,7 @@ html.lightbox-open,html.lightbox-open body{overflow:hidden}
     inset:-2px !important;
     width:auto !important;
     max-width:none !important;
-    background-size:cover !important;
+    background-size:contain !important;
     background-position:center center !important;
     background-repeat:no-repeat !important;
   }
@@ -2003,4 +2003,41 @@ html.lightbox-open,html.lightbox-open body{overflow:hidden}
   .mobile-menu-top .footer-wordmark{width:145px;}
   .mobile-menu nav{margin-top:42px;}
   .mobile-menu nav a{min-height:70px;font-size:34px!important;}
+}
+
+/* AVERON — Mobile Refined Essentials mini-banner scale
+   Keep the uploaded 1080 × 1350 artwork, but present this secondary banner
+   at a clearly smaller visual scale than the 1080 × 1500 primary hero. */
+@media (max-width:760px){
+  body[data-seo-page="home"] .editorial-grid.wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  body[data-seo-page="home"] .editorial-figure{
+    width:78% !important;
+    max-width:500px;
+    aspect-ratio:4 / 5 !important;
+    flex:none;
+    overflow:hidden;
+    background-size:contain !important;
+    background-position:center center !important;
+    background-repeat:no-repeat !important;
+  }
+  body[data-seo-page="home"] .editorial-figure > img,
+  body[data-seo-page="home"] .editorial-figure > [data-mini-image]{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+  }
+}
+
+
+/* AVERON — uploaded banner artwork must always remain fully visible.
+   Use contain rather than cover so Content Studio artwork is never cropped. */
+[data-banner-media].has-custom-banner,
+[data-mini-media].has-custom-mini{
+  background-size:contain !important;
+  background-position:center center !important;
+  background-repeat:no-repeat !important;
 }
