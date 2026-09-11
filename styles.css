@@ -460,8 +460,10 @@ footer.site{ background:var(--navy); color:rgba(251,249,244,.78); padding:90px 0
 .pdp-rating{ display:flex; align-items:center; gap:8px; margin-top:14px; font-size:12px; color:var(--charcoal-soft); }
 .pdp-rating .stars{ display:flex; gap:2px; }
 .pdp-rating svg{ width:13px; height:13px; fill:var(--gold); }
-.pdp-price{ font-size:22px; margin-top:16px; font-weight:500; }
-.pdp-price .was{ font-size:14px; color:var(--charcoal-soft); text-decoration:line-through; margin-left:10px; font-weight:400; }
+.pdp-price-block{ margin-top:16px; }
+.pdp-previous-price{ font-size:13px; line-height:1.2; color:var(--charcoal-soft); text-decoration:line-through; font-weight:400; margin-bottom:3px; }
+.pdp-previous-price[hidden]{ display:none !important; }
+.pdp-price{ font-size:22px; margin:0; font-weight:500; }
 .pdp-block{ margin-top:32px; }
 .pdp-block > .caption{ margin-bottom:12px; display:flex; justify-content:space-between; }
 .size-guide-link{border:0;background:none;padding:0;color:var(--navy);font:inherit;text-transform:uppercase;letter-spacing:.12em;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.size-guide-link:hover{opacity:.65}.size-guide-modal{position:fixed;inset:0;z-index:10020;display:grid;place-items:center;padding:22px}.size-guide-modal[hidden]{display:none!important}.size-guide-backdrop{position:absolute;inset:0;background:rgba(0,22,34,.58);backdrop-filter:blur(2px)}.size-guide-dialog{position:relative;z-index:1;width:min(760px,calc(100vw - 32px));max-height:90vh;background:var(--warm-white);box-shadow:0 24px 70px rgba(0,22,34,.25);display:flex;flex-direction:column}.size-guide-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid var(--grey-line)}.size-guide-head h2{font-family:var(--font-serif);font-weight:400;font-size:26px;margin:0}.size-guide-close{border:0;background:none;color:var(--navy);font-size:30px;line-height:1;cursor:pointer;padding:0 4px}.size-guide-image-wrap{overflow:auto;padding:22px;background:#fff}.size-guide-image-wrap img{display:block;max-width:100%;width:auto;height:auto;max-height:calc(90vh - 105px);margin:0 auto;object-fit:contain}@media(max-width:600px){.size-guide-dialog{width:calc(100vw - 20px);max-height:92vh}.size-guide-head{padding:16px}.size-guide-head h2{font-size:22px}.size-guide-image-wrap{padding:12px}}

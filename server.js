@@ -1274,7 +1274,9 @@ app.post('/api/admin/catalog/product', (req,res)=>{
     const id=safeText(raw.id,48).trim();
     const name=safeText(raw.name,120).trim();
     const price=Number(raw.price);
-    if(!/^[A-Za-z0-9_-]{1,48}$/.test(id)||!name||!Number.isFinite(price)||price<0) return res.status(400).json({error:'Invalid product id, name or price.'});
+    const previousPriceRaw=raw.previousPrice;
+    const previousPrice=(previousPriceRaw===''||previousPriceRaw===null||previousPriceRaw===undefined)?null:Number(previousPriceRaw);
+    if(!/^[A-Za-z0-9_-]{1,48}$/.test(id)||!name||!Number.isFinite(price)||price<0||previousPrice!==null&&(!Number.isFinite(previousPrice)||previousPrice<=price)) return res.status(400).json({error:'Invalid product id or price. Previous price must be higher than the current price.'});
     const supplier=raw.supplier&&typeof raw.supplier==='object'?raw.supplier:{};
     const pid=safeText(supplier.pid,200).trim();
     const logistics=safeText(supplier.logistics||'CJPacket Ordinary',80).trim()||'CJPacket Ordinary';
@@ -1290,7 +1292,7 @@ app.post('/api/admin/catalog/product', (req,res)=>{
     const sizeGuide={enabled:raw.sizeGuide?.enabled===true,image:safeText(raw.sizeGuide?.image,4500000)};
     if(sizeGuide.enabled&&!sizeGuide.image) return res.status(400).json({error:'A Size Guide image is required when Size Guide is enabled.'});
     const shippingCountries=Array.isArray(raw.shippingCountries)?[...new Set(raw.shippingCountries.map(x=>safeText(x,2).toUpperCase()).filter(x=>EUROPE_CHECKOUT_COUNTRIES.includes(x)))]:[];
-    const serverProduct={id,name,price:Math.round(price*100)/100,category:safeText(raw.category,40),colour:safeText(raw.colour,60),label:safeText(raw.label,80),description:safeText(raw.description,1200),details:safeText(raw.details,1200),fit:safeText(raw.fit,1200),delivery:safeText(raw.delivery,1200),returns:safeText(raw.returns,1200),coverImage,images,colourImagery,materialCraft,completeLook,sizeGuide,shippingCountries:shippingCountries.length?shippingCountries:[...EUROPE_CHECKOUT_COUNTRIES],supplier:{provider:'CJ',pid,logistics,variants,colourSwatches,mappings}};
+    const serverProduct={id,name,price:Math.round(price*100)/100,previousPrice:previousPrice===null?null:Math.round(previousPrice*100)/100,category:safeText(raw.category,40),colour:safeText(raw.colour,60),label:safeText(raw.label,80),description:safeText(raw.description,1200),details:safeText(raw.details,1200),fit:safeText(raw.fit,1200),delivery:safeText(raw.delivery,1200),returns:safeText(raw.returns,1200),coverImage,images,colourImagery,materialCraft,completeLook,sizeGuide,shippingCountries:shippingCountries.length?shippingCountries:[...EUROPE_CHECKOUT_COUNTRIES],supplier:{provider:'CJ',pid,logistics,variants,colourSwatches,mappings}};
     const index=catalog.findIndex(p=>p.id===id);if(index>=0)catalog[index]=serverProduct;else catalog.push(serverProduct);productMap.set(id,serverProduct);
     fs.writeFileSync(path.join(__dirname,'products.server.json'),JSON.stringify(catalog,null,2)+'\n','utf8');
     if(pid){

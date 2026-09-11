@@ -69,6 +69,7 @@
       id: pid,
       name: text(raw.name || 'AVERON Product', 120),
       price: price(raw.price),
+      previousPrice: raw.previousPrice === '' || raw.previousPrice === null || raw.previousPrice === undefined ? null : price(raw.previousPrice),
       category: category(raw.category),
       colour: text(raw.colour || 'Deep Navy', 60),
       label: text(raw.label || raw.img || 'AVERON', 80),

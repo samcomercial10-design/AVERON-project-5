@@ -373,49 +373,49 @@
   },
   "p5": {
     "averon_name": "Milano Essential Tee",
-    "cj_product_id": "2608181113121610000",
+    "cj_product_id": "2608260638501638200",
     "logistics": "CJPacket Ordinary",
     "test_only": true,
     "variants": {
       "S": {
-        "vid": "2608181113121611500",
-        "sku": "CJYD307279501AZ",
-        "label": "Advanced Black-S"
+        "vid": "2608260638511636200",
+        "sku": "CJYH309793801AZ",
+        "label": "Black-S"
       },
-      "ADVANCED BLACK|S": {
-        "vid": "2608181113121611500",
-        "sku": "CJYD307279501AZ",
-        "label": "Advanced Black-S"
+      "BLACK|S": {
+        "vid": "2608260638511636200",
+        "sku": "CJYH309793801AZ",
+        "label": "Black-S"
       },
       "M": {
-        "vid": "2608181113121611501",
-        "sku": "CJYD307279502BY",
-        "label": "Advanced Black-M"
+        "vid": "2608260638511636201",
+        "sku": "CJYH309793802BY",
+        "label": "Black-M"
       },
-      "ADVANCED BLACK|M": {
-        "vid": "2608181113121611501",
-        "sku": "CJYD307279502BY",
-        "label": "Advanced Black-M"
+      "BLACK|M": {
+        "vid": "2608260638511636201",
+        "sku": "CJYH309793802BY",
+        "label": "Black-M"
       },
       "L": {
-        "vid": "2608181113121611502",
-        "sku": "CJYD307279503CX",
-        "label": "Advanced Black-L"
+        "vid": "2608260638511636202",
+        "sku": "CJYH309793803CX",
+        "label": "Black-L"
       },
-      "ADVANCED BLACK|L": {
-        "vid": "2608181113121611502",
-        "sku": "CJYD307279503CX",
-        "label": "Advanced Black-L"
+      "BLACK|L": {
+        "vid": "2608260638511636202",
+        "sku": "CJYH309793803CX",
+        "label": "Black-L"
       },
       "XL": {
-        "vid": "2608181113121611503",
-        "sku": "CJYD307279504DW",
-        "label": "Advanced Black-XL"
+        "vid": "2608260638511636203",
+        "sku": "CJYH309793804DW",
+        "label": "Black-XL"
       },
-      "ADVANCED BLACK|XL": {
-        "vid": "2608181113121611503",
-        "sku": "CJYD307279504DW",
-        "label": "Advanced Black-XL"
+      "BLACK|XL": {
+        "vid": "2608260638511636203",
+        "sku": "CJYH309793804DW",
+        "label": "Black-XL"
       }
     }
   },
