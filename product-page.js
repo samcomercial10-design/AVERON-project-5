@@ -102,7 +102,7 @@
     const src=S.imageSrc(prod.coverImage)||S.imageSrc(prod.images?.[0]),hoverSrc=S.imageSrc(prod.images?.[2]);
     if(src){link.classList.add('card-product-link');const img=document.createElement('img');img.src=src;img.alt=prod.name;img.loading='lazy';img.decoding='async';img.className='card-product-image card-product-image--cover';link.appendChild(img);if(hoverSrc&&hoverSrc!==src){const hover=document.createElement('img');hover.src=hoverSrc;hover.alt='';hover.loading='lazy';hover.decoding='async';hover.className='card-product-image card-product-image--hover';hover.setAttribute('aria-hidden','true');link.appendChild(hover)}}
     else{const placeholder=S.el('div','ph');placeholder.appendChild(S.el('div','tick tl'));link.appendChild(placeholder)}
-    figure.appendChild(link);card.append(figure,S.el('div','card-name',prod.name));const meta=S.el('div','card-meta');meta.append(S.el('span','card-price','£'+prod.price.toFixed(2)),S.el('span','card-rating','View'));card.appendChild(meta);return card;
+    figure.appendChild(link);const oldPrice=Number(prod.previousPrice);if(Number.isFinite(oldPrice)&&oldPrice>prod.price)figure.appendChild(S.el('span','card-sale-badge','Sale'));card.append(figure,S.el('div','card-name',prod.name));const meta=S.el('div','card-meta');meta.append(S.el('span','card-price','£'+prod.price.toFixed(2)),S.el('span','card-rating','View'));card.appendChild(meta);return card;
   }
   function renderMaterialCraft(){
     const section=document.getElementById('material-craft-section'),grid=document.getElementById('material-craft-grid');if(!section||!grid)return;
