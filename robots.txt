@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /admin.html
-
-# Add the Sitemap line after the production domain is known.

@@ -1,1 +1,0 @@
-'use strict';const crypto=require('crypto');const password=process.argv.slice(2).join(' ');if(!password||password.length<12){console.error('Use at least 12 characters.');process.exit(1)}const salt=crypto.randomBytes(16),hash=crypto.scryptSync(password,salt,64);console.log(`scrypt$${salt.toString('base64url')}$${hash.toString('base64url')}`);
