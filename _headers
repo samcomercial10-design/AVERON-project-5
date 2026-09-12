@@ -1,0 +1,19 @@
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; media-src 'none'; upgrade-insecure-requests
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Cross-Origin-Opener-Policy: same-origin
+
+/admin.html
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/*.css
+  Cache-Control: public, max-age=3600, must-revalidate
+/*.js
+  Cache-Control: public, max-age=3600, must-revalidate
+/assets/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+/*.html
+  Cache-Control: no-cache

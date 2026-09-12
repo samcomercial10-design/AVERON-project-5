@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>AVERON · CJ Product Test</title>
+<style>
+    :root{--ink:#002f47;--paper:#f4f0e7;--gold:#a97838;--line:#d8d1c4;--white:#fffdf8}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:#171717;font-family:Arial,sans-serif}
+    main{max-width:1080px;margin:auto;padding:42px 22px 70px}.eyebrow{letter-spacing:.24em;color:var(--gold);font-size:12px;font-weight:700}
+    h1{font-family:Georgia,serif;font-size:clamp(38px,7vw,72px);font-weight:400;margin:10px 0 12px}.intro{max-width:720px;line-height:1.6;color:#53616a}
+    .search{display:grid;grid-template-columns:1fr auto;gap:10px;margin:28px 0 20px}.search input{width:100%;padding:16px;border:1px solid var(--line);background:var(--white);font-size:16px}.search button,.choose{border:1px solid var(--ink);background:var(--ink);color:white;padding:0 22px;font-weight:700;letter-spacing:.12em;cursor:pointer}.status{min-height:24px;color:#64747c;margin:10px 0 18px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}.card{background:var(--white);border:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:10px}.card img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#eee}.card h2{font-family:Georgia,serif;font-size:20px;font-weight:400;margin:0}.meta{font-size:12px;color:#66747b;word-break:break-all}.price{font-weight:700}.choose{padding:12px;margin-top:auto}
+    .detail{margin-top:32px;border-top:1px solid var(--line);padding-top:28px}.detail[hidden]{display:none}.detail h2{font:400 34px Georgia,serif}.variant{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.variant small{color:#66747b}.sandboxBtn{border:1px solid var(--gold);background:transparent;color:#6d491e;padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.08em;cursor:pointer}.sandboxBox{margin:24px 0;padding:18px;border:1px solid var(--gold);background:#fffaf0}.sandboxBox strong{color:#6d491e}.sandboxControls{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);gap:8px;flex-wrap:wrap;align-items:center}.sandboxControls.show{display:flex}.sandboxControls button{border:1px solid var(--ink);background:var(--ink);color:white;padding:10px 12px;font-size:11px;font-weight:700;letter-spacing:.07em;cursor:pointer}.sandboxControls button:disabled{opacity:.5;cursor:not-allowed}.sandboxControls input{padding:10px;border:1px solid var(--line);min-width:190px}.sandboxHint{width:100%;font-size:12px;color:#66747b}.sandboxResult{white-space:pre-wrap;overflow:auto;background:#10232d;color:#eef4f5;padding:14px;font-size:12px;margin-top:12px}.logistics{margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.logistics input{padding:10px;border:1px solid var(--line);min-width:260px}.raw{white-space:pre-wrap;overflow:auto;background:#10232d;color:#eef4f5;padding:16px;font-size:12px;max-height:320px}
+    @media(max-width:600px){main{padding:28px 14px 50px}.search{grid-template-columns:1fr}.search button{padding:15px}.grid{grid-template-columns:1fr 1fr}.card{padding:9px}.card h2{font-size:16px}.choose{font-size:11px;padding:10px 6px}}
+  </style>
+</head>
+<body>
+<main>
+<div class="eyebrow" data-layout-id="cj-products-averon-cj-integration">AVERON · CJ INTEGRATION</div>
+<h1 data-layout-id="cj-products-product-test">Product test</h1>
+<p class="intro" data-layout-id="cj-products-search-cj-products-and-choose-one-to-load-">Search CJ products and choose one to load its details and variants. This page is read-only: it does not create an order or make a payment.</p>
+<form class="search" id="searchForm"><input id="keyword" placeholder="Search: shirt, polo, jacket…" value="shirt"/><button data-layout-id="cj-products-search-cj">SEARCH CJ</button></form>
+<div class="status" data-layout-id="cj-products-ready" id="status">Ready.</div>
+<section class="grid" id="products"></section>
+<section class="detail" hidden="" id="detail"><div class="eyebrow" data-layout-id="cj-products-selected-product">SELECTED PRODUCT</div><h2 data-layout-id="cj-products-product" id="detailTitle">Product</h2><div class="sandboxBox"><strong data-layout-id="cj-products-sandbox-only">SANDBOX ONLY</strong><div>This test creates a simulated CJ order only. The server forces <code>isSandbox=1</code>, so CJ should not deduct real balance or generate real fulfilment.</div><div class="logistics"><label>Logistics name <input id="logisticName" value="CJPacket Ordinary"/></label></div><div class="sandboxControls" id="sandboxControls"><div class="sandboxHint" data-layout-id="cj-products-sandbox-lifecycle-for-the-last-order-creat">Sandbox lifecycle for the last order created on this page:</div><button data-layout-id="cj-products-1-confirm-order" id="confirmOrderBtn" type="button">1 · CONFIRM ORDER</button><button data-layout-id="cj-products-2-simulate-payment" disabled="" id="simulatePayBtn" type="button">2 · SIMULATE PAYMENT</button><button data-layout-id="cj-products-3-processing-400" disabled="" id="status400Btn" type="button">3 · PROCESSING (400)</button><label>Fake tracking <input id="trackNumber" value="AVERON-SBX-TRACK-001"/></label><button data-layout-id="cj-products-4-add-tracking" disabled="" id="trackBtn" type="button">4 · ADD TRACKING</button><button data-layout-id="cj-products-5-shipped-500" disabled="" id="status500Btn" type="button">5 · SHIPPED (500)</button></div><pre class="sandboxResult" hidden="" id="sandboxResult"></pre></div><div id="variants"></div><details><summary>Technical response</summary><pre class="raw" id="raw"></pre></details></section>
+</main>
+<script>
+const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function val(o,keys){for(const k of keys){if(o&&o[k]!=null&&o[k]!=='')return o[k]}return ''}
+async function search(e){e?.preventDefault();const k=$('#keyword').value.trim()||'shirt';$('#status').textContent='Searching CJ…';$('#products').innerHTML='';$('#detail').hidden=true;try{const r=await fetch('/api/admin/cj/products?keyword='+encodeURIComponent(k));const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.detail||d.error||'Search failed');$('#status').textContent=`${d.count} products shown · ${d.total_records} results found by CJ`;$('#products').innerHTML=d.products.map(p=>`<article class="card">${p.image?`<img src="${esc(p.image)}" alt="">`:''}<h2>${esc(p.name||'CJ product')}</h2><div class="meta">SKU ${esc(p.sku)}</div><div class="price">${p.sell_price!=null?'$'+esc(p.sell_price):''}</div><button class="choose" data-pid="${esc(p.id)}">VIEW VARIANTS</button></article>`).join('');}catch(err){$('#status').textContent='Error: '+err.message}}
+async function details(pid){$('#status').textContent='Loading product variants…';$('#detail').hidden=true;try{const r=await fetch('/api/admin/cj/product?pid='+encodeURIComponent(pid));const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.detail||d.error||'Detail request failed');const p=d.product||{};$('#detailTitle').textContent=val(p,['productNameEn','productName','nameEn','name','sku'])||'CJ product';$('#variants').innerHTML=d.variants.length?d.variants.map((v,i)=>{const name=val(v,['variantNameEn','variantName','nameEn','name','variantSku','sku'])||`Variant ${i+1}`;const sku=val(v,['variantSku','sku']);const vid=val(v,['vid','variantId','id']);const price=val(v,['variantSellPrice','sellPrice','variantPrice','price']);return `<div class="variant"><div><strong>${esc(name)}</strong><br><small>SKU: ${esc(sku)} · VID: ${esc(vid)}</small></div><div>${price!==''?'$'+esc(price):''}</div><button class="sandboxBtn" data-sandbox-vid="${esc(vid)}" data-sandbox-sku="${esc(sku)}">CREATE SANDBOX ORDER</button></div>`}).join(''):'<p>No variants returned.</p>';$('#raw').textContent=JSON.stringify(d,null,2);$('#detail').hidden=false;$('#detail').scrollIntoView({behavior:'smooth'});$('#status').textContent=`Product loaded · ${d.variant_count} variant(s)`;}catch(err){$('#status').textContent='Error: '+err.message}}
+let lastSandboxOrderId='';
+async function createSandboxOrder(btn){
+  const vid=btn.dataset.sandboxVid||'', sku=btn.dataset.sandboxSku||'';
+  const logistics=$('#logisticName').value.trim();
+  if(!confirm('Create a CJ SANDBOX order for this variant? No real fulfilment should be generated.'))return;
+  btn.disabled=true;btn.textContent='CREATING…';$('#sandboxResult').hidden=true;
+  try{
+    const r=await fetch('/api/admin/cj/sandbox-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vid,sku,quantity:1,logisticName:logistics})});
+    const d=await r.json();$('#sandboxResult').hidden=false;$('#sandboxResult').textContent=JSON.stringify(d,null,2);
+    if(!r.ok||!d.ok)throw new Error(d.detail||d.error||'Sandbox order failed');
+    lastSandboxOrderId=d.order_id||'';
+    if(lastSandboxOrderId){$('#sandboxControls').classList.add('show');$('#confirmOrderBtn').disabled=false;$('#simulatePayBtn').disabled=true;$('#status400Btn').disabled=true;$('#trackBtn').disabled=true;$('#status500Btn').disabled=true;}
+    $('#status').textContent='CJ sandbox order created successfully · no real fulfilment';
+  }catch(err){$('#status').textContent='Sandbox error: '+err.message}
+  finally{btn.disabled=false;btn.textContent='CREATE SANDBOX ORDER'}
+}
+async function sandboxAction(path,body,button){
+  if(!lastSandboxOrderId)return;
+  button.disabled=true;const old=button.textContent;button.textContent='WORKING…';
+  try{const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:lastSandboxOrderId,...body})});const d=await r.json();$('#sandboxResult').hidden=false;$('#sandboxResult').textContent=JSON.stringify(d,null,2);if(!r.ok||!d.ok)throw new Error(d.detail||d.error||'Sandbox action failed');return d;}catch(err){$('#status').textContent='Sandbox error: '+err.message;throw err}finally{button.textContent=old}}
+$('#confirmOrderBtn').addEventListener('click',async()=>{if(!confirm('Confirm this CJ SANDBOX order? This only advances the simulated order to UNPAID; it does not charge real money.'))return;try{await sandboxAction('/api/admin/cj/sandbox/confirm-order',{},$('#confirmOrderBtn'));$('#status').textContent='Sandbox order confirmed · ready for simulated payment';$('#confirmOrderBtn').disabled=true;$('#simulatePayBtn').disabled=false;}catch{}});
+$('#simulatePayBtn').addEventListener('click',async()=>{if(!confirm('Simulate payment for this SANDBOX order? No real balance will be charged.'))return;try{await sandboxAction('/api/admin/cj/sandbox/simulate-pay',{},$('#simulatePayBtn'));$('#status').textContent='Sandbox payment simulated successfully';$('#simulatePayBtn').disabled=true;$('#status400Btn').disabled=false;$('#trackBtn').disabled=false;}catch{}});
+$('#status400Btn').addEventListener('click',async()=>{try{await sandboxAction('/api/admin/cj/sandbox/update-status',{targetStatus:400},$('#status400Btn'));$('#status').textContent='Sandbox order advanced to processing (400)';$('#status400Btn').disabled=true;}catch{}});
+$('#trackBtn').addEventListener('click',async()=>{const trackNumber=$('#trackNumber').value.trim();if(!trackNumber)return alert('Enter a fake sandbox tracking number.');try{await sandboxAction('/api/admin/cj/sandbox/update-track',{trackNumber},$('#trackBtn'));$('#status').textContent='Sandbox tracking number added';$('#trackBtn').disabled=true;$('#status500Btn').disabled=false;}catch{}});
+$('#status500Btn').addEventListener('click',async()=>{try{await sandboxAction('/api/admin/cj/sandbox/update-status',{targetStatus:500},$('#status500Btn'));$('#status').textContent='Sandbox order advanced to shipped (500)';$('#status500Btn').disabled=true;}catch{}});
+$('#searchForm').addEventListener('submit',search);$('#products').addEventListener('click',e=>{const b=e.target.closest('[data-pid]');if(b)details(b.dataset.pid)});$('#variants').addEventListener('click',e=>{const b=e.target.closest('[data-sandbox-vid]');if(b)createSandboxOrder(b)});search();
+</script>
+<script src="site-layout.js"></script>
+</body>
+</html>
