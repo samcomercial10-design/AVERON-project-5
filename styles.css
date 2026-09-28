@@ -2181,3 +2181,59 @@ html.lightbox-open,html.lightbox-open body{overflow:hidden}
   .mobile-menu{ visibility:hidden; pointer-events:none; }
   .mobile-menu.open{ visibility:visible; pointer-events:auto; }
 }
+
+/* ==========================================================
+   AVERON — Premium utility drawers + tighter editorial rhythm
+   2026-09-28
+   ========================================================== */
+
+/* Editorial hierarchy: keep eyebrow/title/supporting copy visually connected. */
+body[data-seo-page="home"] .editorial-copy .eyebrow{margin-top:14px !important;margin-bottom:0;}
+body[data-seo-page="home"] .editorial-copy .h-1{margin-top:9px !important;}
+body[data-seo-page="home"] .editorial-copy .body-lg{margin-top:13px !important;}
+body[data-seo-page="home"] .philosophy .eyebrow{margin-bottom:0;}
+body[data-seo-page="home"] .philosophy p.h-1{margin-top:11px !important;}
+body[data-seo-page="home"] .philosophy p.second{margin-top:14px !important;}
+
+/* A quieter, more tailored drawer treatment. */
+.utility-drawer{width:min(500px,100vw);}
+.utility-head{min-height:104px;padding-top:25px;padding-bottom:23px;}
+.utility-head h3{margin-top:6px;font-size:25px;line-height:1.08;}
+.utility-close{display:grid;place-items:center;transition:border-color .22s ease,background .22s ease,transform .22s ease;cursor:pointer;}
+.utility-close:hover{border-color:var(--gold);background:rgba(166,138,91,.055);transform:rotate(2deg);}
+.utility-body{padding-top:28px;}
+.account-card{padding:2px 0 26px;}
+.account-monogram{margin-bottom:20px;background:rgba(166,138,91,.025);}
+.account-card h4{margin-top:7px;}
+
+/* Account navigation: premium rows, with state communicated intentionally. */
+.account-links{margin-top:3px;border-top:0;}
+.account-links button,.account-links a{
+  position:relative;
+  min-height:53px;
+  padding:17px 4px 16px 0;
+  align-items:center;
+  color:var(--navy);
+  font-weight:500;
+  cursor:pointer;
+  transition:padding-left .22s ease,color .22s ease,background .22s ease,border-color .22s ease;
+}
+.account-links button::before,.account-links a::before{
+  content:"";position:absolute;left:0;top:50%;width:0;height:1px;background:var(--gold);
+  transform:translateY(-50%);transition:width .22s ease;
+}
+.account-links button:hover,.account-links a:hover{padding-left:18px;color:var(--navy);background:linear-gradient(90deg,rgba(166,138,91,.055),transparent 72%);}
+.account-links button:hover::before,.account-links a:hover::before{width:10px;}
+.account-links .account-link-muted{color:#a29d94;cursor:default;}
+.account-links .account-link-muted:hover{padding-left:0;background:transparent;color:#a29d94;}
+.account-links .account-link-muted:hover::before{width:0;}
+.account-links .account-link-count{min-width:22px;height:22px;padding:0 6px;border:1px solid rgba(166,138,91,.55);display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:var(--navy);}
+.account-links .account-link-muted .account-link-count{border-color:var(--grey-line);color:#a29d94;}
+.account-links .account-link-arrow{font-size:15px;font-weight:400;color:var(--navy);transition:transform .22s ease;}
+.account-links button:hover .account-link-arrow,.account-links a:hover .account-link-arrow{transform:translateX(3px);}
+.account-signout{color:var(--charcoal)!important;text-underline-offset:3px;}
+
+@media(max-width:760px){
+  .utility-head{min-height:92px;}
+  .account-links button,.account-links a{min-height:51px;padding-top:15px;padding-bottom:15px;}
+}
