@@ -2071,3 +2071,113 @@ html.lightbox-open,html.lightbox-open body{overflow:hidden}
   background-position:center center !important;
   background-repeat:no-repeat !important;
 }
+
+/* ========================================================================== 
+   AVERON — Responsive / browser-zoom hardening v9
+   Keeps hidden off-canvas UI from leaking into the viewport when browser zoom
+   reduces the effective CSS viewport, and moves the header to its compact
+   layout before desktop navigation can collide.
+   ========================================================================== */
+
+/* A translated fixed panel can still expose overflowing descendants when its
+   contents are taller than the viewport. Clip it in every viewport state. */
+.mobile-menu{
+  overflow-x:hidden;
+  overflow-y:auto;
+  visibility:hidden;
+  pointer-events:none;
+}
+.mobile-menu.open{
+  visibility:visible;
+  pointer-events:auto;
+}
+
+/* Make flexible rows genuinely shrinkable instead of forcing horizontal
+   overflow at browser zoom levels such as 125–200%. */
+.wrap,
+.nav-row,
+.nav-left,
+.nav-right,
+.logo-mark,
+.hero-content,
+.newsletter .wrap{
+  min-width:0;
+}
+
+.newsletter-form input{ min-width:0; }
+
+/* Browser zoom reduces the CSS viewport. Enter the compact header early enough
+   that the five desktop links and utility controls never collide. */
+@media (max-width:1100px){
+  header.site .nav-row{
+    position:relative;
+    display:grid;
+    grid-template-columns:44px minmax(0,1fr) 44px;
+    align-items:center;
+    gap:8px;
+    min-height:68px;
+    height:68px;
+  }
+  header.site .nav-left{
+    grid-column:1;
+    width:44px;
+    min-width:44px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+  }
+  header.site .nav-left .nav-links,
+  header.site .nav-left > .caption{ display:none !important; }
+  header.site .burger{
+    display:flex !important;
+    width:38px;
+    height:38px;
+    align-items:center;
+    justify-content:center;
+  }
+  header.site .logo-mark{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    max-width:calc(100% - 112px);
+    min-width:0;
+    white-space:nowrap;
+    z-index:2;
+  }
+  header.site .header-wordmark{
+    font-size:clamp(19px,2.4vw,25px) !important;
+    letter-spacing:clamp(.11em,.8vw,.20em) !important;
+  }
+  header.site .nav-right{
+    grid-column:3;
+    width:44px;
+    min-width:44px;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:0;
+  }
+  header.site .nav-right > *{ display:none !important; }
+  header.site .nav-right [data-open-cart]{
+    display:flex !important;
+    width:38px;
+    height:38px;
+    align-items:center;
+    justify-content:center;
+  }
+}
+
+/* At compact desktop/tablet widths keep large typography and controls inside
+   their containing block without changing the desktop visual direction. */
+@media (max-width:1024px){
+  .h-display{ font-size:clamp(38px,7vw,64px); }
+  .hero-content h1{ max-width:min(820px,82vw); }
+  .hero-content .sub{ max-width:min(440px,72vw); }
+  .newsletter-form{ width:min(440px,100%); }
+}
+
+@media (max-width:760px){
+  .mobile-menu{ visibility:hidden; pointer-events:none; }
+  .mobile-menu.open{ visibility:visible; pointer-events:auto; }
+}
