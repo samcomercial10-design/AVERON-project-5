@@ -2051,3 +2051,23 @@ html.lightbox-open,html.lightbox-open body{overflow:hidden}
   background-position:center center !important;
   background-repeat:no-repeat !important;
 }
+
+/* Main banner seam fix.
+   Content Studio resizes large uploads before saving them. The resulting
+   rounded pixel dimensions can differ from the 1920:750 or 1080:1500 frame
+   by a fraction of a pixel; with `contain`, that exposed the dark placeholder
+   background as a thin line along the bottom edge. Overscan the main artwork
+   by one pixel and fill that tiny excess area. Mini banners keep `contain`. */
+[data-content-banner]{
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+}
+[data-content-banner] > [data-banner-media].has-custom-banner{
+  inset:-1px 0 !important;
+  width:auto !important;
+  max-width:none !important;
+  background-size:100% 100% !important;
+  background-position:center center !important;
+  background-repeat:no-repeat !important;
+}
