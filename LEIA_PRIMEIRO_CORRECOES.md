@@ -18,7 +18,7 @@
 
 ## Duas mudanças visíveis
 
-1. **Quick Add** abre a página do produto para escolher tamanho e cor. Antes adicionava sempre Navy / M, mesmo em produtos sem essa combinação.
+1. **Quick Add** adiciona o produto diretamente ao carrinho e abre a sacola. Para vestuário, usa tamanho M; para acessórios, One Size; a cor e a imagem vêm do cadastro do produto.
 2. **Request refund** registra a solicitação; você aprova no painel depois de verificar o fornecedor. O botão não devolve dinheiro sozinho.
 
 ## Como atualizar sem perder dados

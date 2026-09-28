@@ -183,8 +183,32 @@
       const btn=e.target.closest('[data-quickadd]');
       if(!btn || e.defaultPrevented)return;
       e.preventDefault();
+      e.stopPropagation();
       const d=btn.dataset;
-      location.assign('product.html?id='+encodeURIComponent(d.quickadd));
+      const pid=S.id(d.quickadd);
+      if(!pid)return;
+
+      // Quick Add is intentionally a one-click add-to-bag action.
+      // Resolve the full product so the cart receives the correct colour/image
+      // instead of navigating to the product detail page.
+      let product=null;
+      try{
+        const raw=Array.isArray(window.AVERON_PRODUCTS)&&window.AVERON_PRODUCTS.length
+          ? window.AVERON_PRODUCTS
+          : S.safeJson(localStorage.getItem('averon_products_v1')||'[]',[]);
+        product=S.products(raw,[]).find(p=>p.id===pid)||null;
+      }catch(_){ product=null; }
+
+      const category=product?.category||'';
+      addToCart({
+        id:pid,
+        name:product?.name||d.name||'AVERON Product',
+        price:product?.price??d.price,
+        colour:product?.colour||'Deep Navy',
+        size:category==='Accessories'?'One Size':'M',
+        qty:1,
+        image:S.imageSrc(product?.coverImage)||S.imageSrc(product?.images?.[0])||''
+      });
     });
     document.querySelectorAll('.accordion-trigger').forEach(t=>t.addEventListener('click',()=>t.parentElement.classList.toggle('open')));
     if('IntersectionObserver' in window){const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.14});document.querySelectorAll('.reveal').forEach(el=>io.observe(el));}
