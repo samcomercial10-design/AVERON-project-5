@@ -2237,3 +2237,30 @@ body[data-seo-page="home"] .philosophy p.second{margin-top:14px !important;}
   .utility-head{min-height:92px;}
   .account-links button,.account-links a{min-height:51px;padding-top:15px;padding-bottom:15px;}
 }
+
+
+/* ==========================================================
+   AVERON — Focus layer + cross-page wishlist state
+   2026-09-28
+   ========================================================== */
+/* The drawer remains crisp while the storefront behind it recedes softly.
+   backdrop-filter is intentionally restrained to preserve the AVERON editorial feel. */
+.overlay{
+  background:rgba(0,41,63,.46);
+  -webkit-backdrop-filter:blur(0px);
+  backdrop-filter:blur(0px);
+  transition:opacity .38s var(--ease),-webkit-backdrop-filter .38s var(--ease),backdrop-filter .38s var(--ease);
+}
+.overlay.open{
+  -webkit-backdrop-filter:blur(3.5px);
+  backdrop-filter:blur(3.5px);
+}
+@media (prefers-reduced-motion:reduce){
+  .overlay{transition:none;}
+}
+@media (max-width:760px){
+  .overlay.open{
+    -webkit-backdrop-filter:blur(2.5px);
+    backdrop-filter:blur(2.5px);
+  }
+}

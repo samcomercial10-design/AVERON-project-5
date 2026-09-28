@@ -21,7 +21,7 @@
   }
   const catPath=p.category==='Jackets'?'jackets.html':p.category==='Trousers'?'trousers.html':p.category==='Accessories'?'accessories.html':'clothing.html';const catLink=document.getElementById('p-category-link');if(catLink){catLink.textContent=p.category;catLink.href=catPath}set('p-category-label',p.category);set('p-breadcrumb-name',p.name);
   window.dispatchEvent(new CustomEvent('averon:product-rendered',{detail:p}));
-  const wish=document.querySelector('[data-wishlist-btn]');if(wish)wish.dataset.wishlistBtn=p.id;
+  const wish=document.querySelector('[data-wishlist-btn]');if(wish){wish.dataset.wishlistBtn=p.id;window.AVERON_syncWishlistUI?.();}
   const clean = value => S.text(value || '',120);
   const knownSize = /^(?:XXXS|XXS|XS|S|M|L|XL|XXL|XXXL|[2-9]XL|[0-9]{1,3}(?:CM)?)$/i;
   function splitVariantLabel(label){
