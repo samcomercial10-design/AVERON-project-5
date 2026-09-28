@@ -1769,6 +1769,57 @@ app.post('/api/refund-request', requireCustomer, async (req, res) => {
   return res.json({ok:true,status:'requested',order_ref:order.order_ref,automatic:false});
 });
 
+// Admin-only CJ sandbox lifecycle control for Stripe TEST orders.
+// Unlike the generic local sandbox tools below, this route is safe to expose on Render:
+// it resolves the supplier order from AVERON's database and refuses live/non-sandbox orders.
+app.post('/api/admin/orders/:sessionId/cj-sandbox-advance', async (req, res) => {
+  const sessionId = safeText(req.params.sessionId,255);
+  const action = safeText(req.body?.action,32).toLowerCase();
+  const order = dbPrepare('SELECT * FROM orders WHERE session_id=?').get(sessionId);
+  if (!order) return res.status(404).json({error:'Order not found.'});
+  if (!sessionId.startsWith('cs_test_') || Number(order.cj_sandbox) !== 1) {
+    return res.status(409).json({error:'Sandbox controls are available only for Stripe TEST / CJ sandbox orders.'});
+  }
+  if (!cjApiKey) return res.status(503).json({error:'CJ_API_KEY is not configured on the server.'});
+  const orderId = safeText(order.cj_order_id || '',200).trim();
+  if (!orderId) return res.status(409).json({error:'This test order is not linked to a CJ sandbox order yet.'});
+
+  const current = safeText(order.cj_status || '',80).toLowerCase();
+  const now = Math.floor(Date.now()/1000);
+  try {
+    if (action === 'processing') {
+      if (!['paid_300','processing_400'].includes(current)) {
+        return res.status(409).json({error:'Move the sandbox order to Processing only after CJ Sandbox: paid.'});
+      }
+      if (current !== 'processing_400') {
+        await cjRequest('/shopping/sandbox/updateStatus',{method:'POST',body:JSON.stringify({orderId,targetStatus:400})});
+        updateCjState(sessionId,{cj_status:'processing_400',cj_error:'',cj_sandbox:1,cj_updated:now});
+      }
+      return res.json({ok:true,status:'processing_400',message:'CJ sandbox order moved to Processing.'});
+    }
+
+    if (action === 'dispatched') {
+      if (!['processing_400','shipped_500'].includes(current)) {
+        return res.status(409).json({error:'Move the sandbox order to Processing before simulating dispatch.'});
+      }
+      let tracking = safeText(order.cj_tracking_number || '',64).trim();
+      if (!tracking) tracking = `AVERON-TEST-${String(order.order_ref || sessionId).replace(/[^A-Za-z0-9]/g,'').slice(-12).toUpperCase()}`;
+      if (current !== 'shipped_500') {
+        await cjRequest('/shopping/sandbox/updateStatus',{method:'POST',body:JSON.stringify({orderId,targetStatus:500})});
+      }
+      await cjRequest('/shopping/sandbox/updateTrackNumber',{method:'POST',body:JSON.stringify({orderId,trackNumber:tracking})});
+      updateCjState(sessionId,{cj_status:'shipped_500',cj_error:'',cj_sandbox:1,cj_updated:now,cj_tracking_number:tracking,fulfillment_status:'shipped'});
+      return res.json({ok:true,status:'shipped_500',tracking_number:tracking,message:'CJ sandbox order simulated as dispatched/shipped.'});
+    }
+
+    return res.status(400).json({error:'Action must be processing or dispatched.'});
+  } catch (err) {
+    console.error('CJ sandbox admin advance failed:', err.message, err.cjCode || '');
+    updateCjState(sessionId,{cj_error:safeText(err.message,240),cj_updated:now});
+    return res.status(502).json({ok:false,error:'CJ could not advance this sandbox order.',detail:safeText(err.message,240),code:err.cjCode??null});
+  }
+});
+
 app.post('/api/admin/orders/:sessionId/fulfillment', (req, res) => {
   const sessionId = safeText(req.params.sessionId,255);
   const status = safeText(req.body?.status,32);

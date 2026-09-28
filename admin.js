@@ -336,6 +336,12 @@
       }
       if(o.refund_status==='requested'){const approve=document.createElement('button');approve.type='button';approve.className='admin-btn primary';approve.textContent='Approve Refund';approve.dataset.approveRefund=o.session_id;actions.appendChild(approve);}
       if(['running','review'].includes(o.fulfillment_job?.state)){const btn=document.createElement('button');btn.type='button';btn.className='admin-btn';btn.textContent='Reconcile CJ';btn.dataset.reconcileCj=o.session_id;actions.appendChild(btn);}
+      // Sandbox lifecycle buttons are rendered only for Stripe TEST orders that the server marked as CJ sandbox.
+      if(String(o.session_id||'').startsWith('cs_test_')&&Number(o.cj_sandbox)===1&&o.cj_order_id){
+        if(o.cj_status==='paid_300'){const btn=document.createElement('button');btn.type='button';btn.className='admin-btn primary';btn.textContent='Simulate Processing';btn.dataset.cjSandboxAdvance=o.session_id;btn.dataset.cjAction='processing';actions.appendChild(btn);}
+        if(o.cj_status==='processing_400'){const btn=document.createElement('button');btn.type='button';btn.className='admin-btn primary';btn.textContent='Simulate Dispatched';btn.dataset.cjSandboxAdvance=o.session_id;btn.dataset.cjAction='dispatched';actions.appendChild(btn);}
+        if(o.cj_status==='shipped_500'&&o.cj_tracking_number){const tr=document.createElement('span');tr.className='admin-order-sandbox-note';tr.textContent='TEST tracking: '+S.text(o.cj_tracking_number,64);actions.appendChild(tr);}
+      }
       if(o.cj_error){const err=document.createElement('div');err.className='admin-order-meta';const x=document.createElement('span');x.textContent='CJ: '+S.text(o.cj_error,180);err.appendChild(x);card.append(top,meta,items,foot,state,err,actions);}else{card.append(top,meta,items,foot,state,actions);}list.appendChild(card);
     });
   }
@@ -358,6 +364,15 @@
     const approve=e.target.closest('[data-approve-refund]');
     const retryCj=e.target.closest('[data-retry-cj]');
     const reconcile=e.target.closest('[data-reconcile-cj]');
+    const sandboxAdvance=e.target.closest('[data-cj-sandbox-advance]');
+    if(sandboxAdvance){
+      const action=sandboxAdvance.dataset.cjAction;
+      const label=action==='processing'?'Processing':'Dispatched';
+      if(!confirm(`Simulate ${label} for this CJ SANDBOX order? This control cannot operate live orders.`))return;
+      sandboxAdvance.disabled=true;const previous=sandboxAdvance.textContent;sandboxAdvance.textContent='Updating CJ…';
+      try{const r=await fetch('/api/admin/orders/'+encodeURIComponent(sandboxAdvance.dataset.cjSandboxAdvance)+'/cj-sandbox-advance',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({action})});const d=await r.json();if(!r.ok)throw new Error(d.detail||d.error||'Unable to update CJ sandbox order.');toast(action==='dispatched'?(d.tracking_number?'Sandbox dispatched · '+d.tracking_number:'Sandbox dispatched.'):'Sandbox moved to Processing.');await loadAdminOrders();}catch(err){sandboxAdvance.disabled=false;sandboxAdvance.textContent=previous;toast(S.text(err.message||'Unable to update CJ sandbox order.',180));}
+      return;
+    }
     if(reconcile){
       const id=prompt('Check CJ Orders first. Enter the existing CJ order ID, or type NONE only after confirming no supplier order exists.');
       if(id===null||!id.trim())return;
