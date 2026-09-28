@@ -15,6 +15,7 @@
   document.addEventListener('DOMContentLoaded',()=>{
     const button=document.querySelector('[data-stripe-checkout]');
     if(!button)return;
+    if(new URLSearchParams(location.search).get('cancelled')==='1')sessionStorage.removeItem('averon_checkout_attempt');
     if(new URLSearchParams(location.search).get('cancelled')==='1') setStatus('Payment was cancelled. Your bag is still here.',false);
 
     button.addEventListener('click',async()=>{
@@ -33,10 +34,13 @@
           location.assign('index.html?account=login&next=checkout.html');
           return;
         }
+        const cartKey=JSON.stringify(cart.map(i=>({id:i.id,qty:i.qty,size:i.size,colour:i.colour})));
+        let attempt;try{attempt=JSON.parse(sessionStorage.getItem('averon_checkout_attempt')||'null')}catch(_){}
+        if(!attempt||attempt.cart!==cartKey||Date.now()-attempt.time>1800000){attempt={cart:cartKey,id:crypto.randomUUID(),time:Date.now()};sessionStorage.setItem('averon_checkout_attempt',JSON.stringify(attempt));}
         const response=await fetch('/api/create-checkout-session',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({items:cart.map(i=>({id:i.id,qty:i.qty,size:i.size,colour:i.colour}))})
+          body:JSON.stringify({attempt_id:attempt.id,items:cart.map(i=>({id:i.id,qty:i.qty,size:i.size,colour:i.colour}))})
         });
         const data=await response.json().catch(()=>({}));
         if(!response.ok||!data.url)throw new Error(data.error||'Unable to start checkout.');

@@ -26,7 +26,7 @@ test('live CJ automation never reuses sandbox product mapping helper',()=>{
   const start=server.indexOf('async function syncStripeLiveOrderToCj');
   const end=server.indexOf('function queueCjAutomationForPaidStripeSession',start);
   const liveBlock=server.slice(start,end);
-  assert.match(liveBlock,/cjLiveVariantFor/);
+  assert.match(liveBlock,/supplier_snapshot/);
   assert.doesNotMatch(liveBlock,/cjSandboxVariantFor/);
   assert.match(liveBlock,/isSandbox:0/);
 });

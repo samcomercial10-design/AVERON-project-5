@@ -9,7 +9,10 @@
     "dev": "node server.js",
     "admin:hash": "node create-admin-hash.js",
     "test": "node --test tests/*.test.js",
-    "deploy:verify": "node scripts/post-deploy-check.js"
+    "deploy:verify": "node scripts/post-deploy-check.js",
+    "build": "node scripts/build-public.js",
+    "prestart": "npm run build",
+    "predev": "npm run build"
   },
   "engines": {
     "node": ">=24"

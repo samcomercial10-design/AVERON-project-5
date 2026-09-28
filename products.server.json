@@ -2,8 +2,8 @@
   {
     "id": "p1",
     "name": "Regent Ribbed Knit Tee.",
-    "price": 52.96,
-    "previousPrice": 65.5,
+    "price": 40.5,
+    "previousPrice": 49.9,
     "category": "Clothing",
     "colour": "Deep Navy",
     "label": "AVERON",
@@ -133,6 +133,7 @@
     "id": "p3",
     "name": "Santorini Linen Shirt.",
     "price": 45.75,
+    "previousPrice": 49.9,
     "category": "Clothing",
     "colour": "Light Blue",
     "label": "AVERON",
@@ -799,7 +800,8 @@
   {
     "id": "p5",
     "name": "Milano Essential Tee",
-    "price": 42.75,
+    "price": 40.75,
+    "previousPrice": null,
     "category": "Clothing",
     "colour": "Deep Navy",
     "label": "AVERON",

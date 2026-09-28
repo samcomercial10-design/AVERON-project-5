@@ -99,12 +99,12 @@ test('invalid admin login does not authenticate', async () => {
 
 test('public order status endpoint validates session IDs without exposing order data', async () => {
   const invalid = await fetch(`${base}/api/order-status?session_id=not-a-stripe-session`);
-  assert.equal(invalid.status, 400);
+  assert.equal(invalid.status, 401);
 
   const missing = await fetch(`${base}/api/order-status?session_id=cs_test_1234567890abcdef`);
-  assert.equal(missing.status, 404);
+  assert.equal(missing.status, 401);
   const body = await missing.json();
-  assert.equal(body.error, 'Order not found.');
+  assert.equal(body.error, 'Sign in to access your order.');
 });
 
 
@@ -163,7 +163,8 @@ test('Stripe checkout is limited to the supported European market', () => {
 test('checkout requires a signed-in Supabase customer before Stripe session creation', () => {
   const source = fs.readFileSync(path.resolve(__dirname, '..', 'server.js'), 'utf8');
   const route = source.slice(source.indexOf("app.post('/api/create-checkout-session'"), source.indexOf("app.get('/api/order-status'"));
-  assert.match(route, /const authUser = await getCustomerAuth\(req,res\)/);
+  assert.match(route, /requireCustomer/);
+  assert.match(route, /const authUser = req.customerUser/);
   assert.match(route, /if \(!authUser\) return res\.status\(401\)/);
   assert.match(route, /code:'AUTH_REQUIRED'/);
 });

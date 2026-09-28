@@ -1,3 +1,4 @@
+sessionStorage.removeItem('averon_checkout_attempt');
 (function(){
   'use strict';
   const params=new URLSearchParams(location.search);const sessionId=params.get('session_id')||'';

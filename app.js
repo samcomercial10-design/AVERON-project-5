@@ -184,7 +184,7 @@
       if(!btn || e.defaultPrevented)return;
       e.preventDefault();
       const d=btn.dataset;
-      addToCart({id:d.quickadd,name:d.name,price:d.price,colour:'Navy',size:'M',qty:1});
+      location.assign('product.html?id='+encodeURIComponent(d.quickadd));
     });
     document.querySelectorAll('.accordion-trigger').forEach(t=>t.addEventListener('click',()=>t.parentElement.classList.toggle('open')));
     if('IntersectionObserver' in window){const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.14});document.querySelectorAll('.reveal').forEach(el=>io.observe(el));}

@@ -9,7 +9,8 @@ test('product catalogue is server-backed and cache-bypassed',()=>{
   const sync=fs.readFileSync(path.join(root,'catalogue-sync.js'),'utf8');
   assert.match(server,/app\.get\('\/api\/catalog'/);
   assert.match(server,/no-store, no-cache/);
-  assert.match(sync,/fetch\('\/api\/catalog'/);
+  assert.match(sync,/\/api\/catalog/);
+  assert.match(sync,/\/api\/admin\/catalog/);
 });
 
 test('admin browser cache excludes base64 product imagery',()=>{
@@ -23,7 +24,7 @@ test('admin uses the product returned from server after save',()=>{
   const admin=fs.readFileSync(path.join(root,'admin.js'),'utf8');
   assert.match(admin,/Object\.assign\(p,data\.product\|\|candidate\)/);
   assert.match(admin,/adminReady\.then\(async\(\)=>/);
-  assert.match(admin,/fetch\('\/api\/catalog'/);
+  assert.match(admin,/fetch\('\/api\/admin\/catalog'/);
 });
 
 test('image limits are consistent between browser sanitizer and server',()=>{
@@ -31,7 +32,8 @@ test('image limits are consistent between browser sanitizer and server',()=>{
   const server=fs.readFileSync(path.join(root,'server.js'),'utf8');
   assert.match(sec,/MAX_DATA_IMAGE = 4_500_000/);
   assert.match(server,/safeText\(raw\.coverImage,4500000\)/);
-  assert.match(server,/limit: '96mb'/);
+  assert.match(server,/limit:\s*'96mb'/);
+  assert.match(server,/requireAdmin\(req,res,\(\)=>adminJson/);
 });
 
 test('product cover stays out of the product-detail gallery',()=>{

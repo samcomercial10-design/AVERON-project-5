@@ -1,25 +1,9 @@
-# AVERON refund flow — validation build
+# Reembolsos — fluxo atual
 
-This build adds Stripe-backed refund logic to the existing order database.
+O cliente autenticado solicita reembolso apenas do próprio pedido. A solicitação retém novas tarefas de envio e não chama Stripe automaticamente.
 
-## Customer flow
+Em Content Studio → Orders, o administrador revisa e escolhe Approve Refund. Quando há pedido CJ ou resultado incerto, a API exige confirmação explícita da resolução com o fornecedor. Tarefas em processamento ou interrompidas precisam ser reconciliadas antes da aprovação.
 
-- The customer selects **Request refund** from their saved order.
-- The browser asks for confirmation before sending anything.
-- If the order is marked **Not shipped**, the backend sends a full refund request to Stripe immediately.
-- When Stripe reports the refund as succeeded, the order is marked **Refunded** and its fulfilment state becomes **Cancelled**.
-- If the order is already marked **Shipped**, no automatic refund is sent. The order becomes **Refund requested** and waits for review in Content Studio → Orders.
+A aprovação envia o reembolso integral à Stripe com chave de idempotência. Eventos refund.created/refund.updated/refund.failed sincronizam a situação. Falhas exigem conferência no Stripe; reembolsos parciais são feitos no painel Stripe. Não há cancelamento automático do fornecedor nesta versão.
 
-## Admin flow
-
-Content Studio → Orders now shows fulfilment and refund state for every order.
-
-- **Mark Shipped / Mark Not Shipped** changes the local fulfilment state.
-- **Approve Refund** appears only when a shipped order has a pending refund request.
-- Approving sends the refund to Stripe through the server. The Stripe secret key never goes to the browser.
-
-## Important before production
-
-The fulfilment state is manual in this validation build. Do **not** enable automatic refunds in production until `fulfillment_status` is synchronised with the real fulfilment/shipping provider. Otherwise an order that has physically shipped but was not marked as shipped in AVERON could still be automatically refunded.
-
-Admin refund actions remain localhost-only in this build. Add real server-side admin authentication before publishing the Content Studio.
+Consulte LEIA_PRIMEIRO_CORRECOES.md para reconciliação CJ, configuração de webhook e migração.

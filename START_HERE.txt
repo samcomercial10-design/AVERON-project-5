@@ -1,16 +1,13 @@
-AVERON — LOCAL TESTING
+AVERON — INÍCIO
 
-1. Extract the ENTIRE AVERON_CSS_LOCAL_FIXED folder from the ZIP before opening the site.
-2. Do NOT open index.html directly from inside WinRAR/7-Zip. The browser needs styles.css, JavaScript and the assets/ folder beside the HTML files.
-3. After extraction, open index.html.
+Leia LEIA_PRIMEIRO_CORRECOES.md antes de atualizar.
 
-Folder structure must stay intact:
-index.html
-styles.css
-app.js / other .js files
-assets/
-  favicon.png
-  logo-navy.png
-  logo-white.png
+Requer Node.js >=24. Extraia a pasta inteira e preserve seu .env e seus dados.
+Na pasta AVERON:
+  npm ci
+  npm start
 
-For production, serve the folder through HTTPS instead of file://.
+Abra http://localhost:4242 (ou sua porta).
+Não abra index.html diretamente e não publique a raiz como hospedagem estática.
+O servidor atende arquivos públicos exclusivamente de public/.
+O ZIP não inclui node_modules, .env real nem banco/sessões anteriores.

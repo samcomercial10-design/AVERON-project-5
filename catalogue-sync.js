@@ -16,7 +16,7 @@
   async function load(){
     if(!S)return [];
     try{
-      const r=await fetch('/api/catalog',{headers:{Accept:'application/json'},cache:'no-store'});
+      const r=await fetch((/^\/admin(?:[.-]|$)/.test(location.pathname)?'/api/admin/catalog':'/api/catalog'),{headers:{Accept:'application/json'},cache:'no-store'});
       const data=await r.json();
       if(!r.ok||!Array.isArray(data.products))throw new Error(data.error||'Catalogue unavailable');
       const products=S.products(data.products,[]);

@@ -9,3 +9,7 @@ averon-orders.db-wal
 averon-orders.db-shm
 coverage/
 .tmp/
+
+public/
+*.db-wal
+*.db-shm

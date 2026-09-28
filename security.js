@@ -105,7 +105,7 @@
           vid:text(m?.vid,200),
           sku:text(m?.sku,200),
           enabled:m?.enabled !== false
-        })).filter(m=>m.option && (m.vid||m.sku)) : []
+        })).filter(m=>m.option && (m.cjLabel||m.vid||m.sku)) : []
       }
     };
   }

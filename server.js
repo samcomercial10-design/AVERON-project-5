@@ -11,13 +11,26 @@ const {DatabaseSync} = require('node:sqlite');
 const { performance } = require('perf_hooks');
 const observability = require('./observability');
 observability.installStructuredConsole();
-const catalog = require('./products.server.json');
-const cjSandboxMap = require('./cj-sandbox-map.json');
+const DATA_DIR=process.env.AVERON_DATA_DIR?path.resolve(process.env.AVERON_DATA_DIR):__dirname;
+if(['public','assets'].some(name=>DATA_DIR===path.join(__dirname,name)||DATA_DIR.startsWith(path.join(__dirname,name)+path.sep)))throw new Error('AVERON_DATA_DIR must be outside public and assets.');
+fs.mkdirSync(DATA_DIR,{recursive:true});
+const dataFile=name=>path.join(DATA_DIR,name);
+for(const name of ['products.server.json','cj-sandbox-map.json','site-content.server.json','site-layout.server.json']){
+  if(!fs.existsSync(dataFile(name)))fs.copyFileSync(path.join(__dirname,name),dataFile(name));
+}
+const catalog = require(dataFile('products.server.json'));
+const cjSandboxMap = require(dataFile('cj-sandbox-map.json'));
 
 function safeEnv(value, max) { return String(value ?? '').trim().slice(0, max); }
 
 const app = express();
+const PUBLIC_DIR = path.join(__dirname, 'public');
+if(!fs.existsSync(PUBLIC_DIR))require('./scripts/build-public').buildPublic();
 const port = Number(process.env.PORT || 4242);
+const proxyHops=Number(process.env.TRUST_PROXY_HOPS||0);
+if(!Number.isInteger(proxyHops)||proxyHops<0||proxyHops>5)throw new Error('TRUST_PROXY_HOPS must be between 0 and 5.');
+if(proxyHops)app.set('trust proxy',proxyHops);
+if(process.env.NODE_ENV==='production'&&!/^https:\/\/[^/\s]+$/.test(String(process.env.SITE_URL||'').replace(/\/$/,'')))throw new Error('Production requires SITE_URL with the canonical HTTPS origin.');
 const ADMIN_COOKIE='averon_admin_session';
 const CUSTOMER_ACCESS_COOKIE='averon_customer_access';
 const CUSTOMER_REFRESH_COOKIE='averon_customer_refresh';
@@ -44,9 +57,11 @@ const cjAutoPayBalance = String(process.env.CJ_AUTO_PAY_BALANCE || 'false').toLo
 const cjLiveLogisticsDefault = safeEnv(process.env.CJ_LIVE_LOGISTICS_DEFAULT || 'CJPacket Ordinary', 50);
 const cjFromCountryCode = safeEnv(process.env.CJ_FROM_COUNTRY_CODE || 'CN', 3).toUpperCase() || 'CN';
 let cjTokenCache = null;
-const stripe = secretKey ? new Stripe(secretKey) : null;
+const stripe = secretKey ? new Stripe(secretKey,{timeout:20000,maxNetworkRetries:1}) : null;
 const productMap = new Map(catalog.map(p => [p.id, p]));
-const dbPath = process.env.AVERON_DB_PATH ? path.resolve(process.env.AVERON_DB_PATH) : path.join(__dirname, 'averon-orders.db');
+const dbPath = process.env.AVERON_DB_PATH ? path.resolve(process.env.AVERON_DB_PATH) : dataFile('averon-orders.db');
+if(['public','assets'].some(name=>dbPath.startsWith(path.join(__dirname,name)+path.sep)))throw new Error('The order database must be outside public and assets.');
+fs.mkdirSync(path.dirname(dbPath),{recursive:true});
 const db = new DatabaseSync(dbPath);
 const dbPrepare = sql => observability.timedDbPrepare(db, sql);
 const dbExec = sql => observability.timedDbExec(db, sql);
@@ -100,6 +115,12 @@ dbExec(`
     user_agent_hash TEXT NOT NULL DEFAULT ''
   );
 `);
+
+dbExec(`CREATE TABLE IF NOT EXISTS fulfillment_jobs (
+  session_id TEXT PRIMARY KEY REFERENCES orders(session_id),
+  live INTEGER NOT NULL, state TEXT NOT NULL DEFAULT 'pending',
+  updated INTEGER NOT NULL, note TEXT NOT NULL DEFAULT ''
+);`);
 
 // Keep existing local databases compatible with newer order/refund fields.
 // Check the schema first so an already-applied migration is not logged as a DB error.
@@ -160,7 +181,7 @@ const listOrdersStmt = dbPrepare(`
 
 app.disable('x-powered-by');
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {useDefaults:true,directives:{'script-src':["'self'"],'style-src':["'self'","'unsafe-inline'",'https://fonts.googleapis.com'],'font-src':["'self'",'https://fonts.gstatic.com','data:'],'img-src':["'self'",'data:','blob:'],'connect-src':["'self'"],'object-src':["'none'"],'frame-ancestors':["'none'"],'upgrade-insecure-requests':process.env.NODE_ENV==='production'?[]:null}},
   crossOriginEmbedderPolicy: false
 }));
 
@@ -239,21 +260,10 @@ async function getCustomerAuth(req,res,{refresh=true}={}){
   return null;
 }
 function requestOriginCandidates(req){
-  const out=new Set();
   const configured=String(process.env.SITE_URL||'').trim().replace(/\/$/,'');
-  if(configured)out.add(configured);
-
-  const forwardedProto=String(req.get('x-forwarded-proto')||'').split(',')[0].trim();
-  const forwardedHost=String(req.get('x-forwarded-host')||'').split(',')[0].trim();
-  if(forwardedProto&&forwardedHost)out.add(`${forwardedProto}://${forwardedHost}`);
-
-  const host=String(req.get('host')||'').trim();
-  if(host){
-    out.add(`${req.protocol}://${host}`);
-    // Render terminates TLS at its proxy, so Express can see http internally while the browser uses https.
-    if(!isLocalRequest(req))out.add(`https://${host}`);
-  }
-  return [...out].map(v=>v.replace(/\/$/,''));
+  if(configured)return [configured];
+  if(process.env.NODE_ENV==='production')return [];
+  return isLocalRequest(req)?[`${req.protocol}://${req.get('host')}`]:[];
 }
 function sameOriginCustomerRequest(req){
   if(!['POST','PUT','PATCH','DELETE'].includes(req.method))return true;
@@ -268,22 +278,17 @@ function safeQty(value) {
   return Number.isFinite(n) ? Math.max(1, Math.min(20, n)) : 1;
 }
 function originFor(req) {
-  const configured = String(process.env.SITE_URL || '').trim().replace(/\/$/, '');
-  if (configured) return configured;
-  const forwardedProto=String(req.get('x-forwarded-proto')||'').split(',')[0].trim();
-  const forwardedHost=String(req.get('x-forwarded-host')||'').split(',')[0].trim();
-  if(forwardedProto&&forwardedHost)return `${forwardedProto}://${forwardedHost}`.replace(/\/$/,'');
-  const host=String(req.get('host')||'').trim();
-  if(host&&!isLocalRequest(req))return `https://${host}`;
-  return `${req.protocol}://${host}`;
+  const origin=requestOriginCandidates(req)[0];
+  if(!origin)throw new Error('Configure SITE_URL before accepting requests.');
+  return origin;
 }
 function orderRefFor(id) {
   const tail = safeText(id, 255).replace(/[^A-Za-z0-9]/g, '').slice(-8).toUpperCase();
   return `AV-${tail || Date.now().toString(36).toUpperCase()}`;
 }
 function isLocalRequest(req) {
-  const host = String(req.hostname || '').toLowerCase();
-  return ['localhost','127.0.0.1','::1'].includes(host);
+  const remote=String(req.socket?.remoteAddress||'');
+  return process.env.NODE_ENV!=='production' && ['127.0.0.1','::1','::ffff:127.0.0.1'].includes(remote) && ['localhost','127.0.0.1','::1'].includes(String(req.hostname||''));
 }
 function parseItemsJson(value) {
   try { const data = JSON.parse(value || '[]'); return Array.isArray(data) ? data : []; }
@@ -491,51 +496,19 @@ function normalizeSupplierOption(value) {
 }
 
 function cjLiveVariantFor(item) {
-  const product = productMap.get(safeText(item?.product_id, 48));
-  if (!product) throw new Error(`AVERON product ${item?.product_id || 'unknown'} is missing from the server catalogue.`);
-
-  const supplier = product.supplier && typeof product.supplier === 'object' ? product.supplier : {};
-  if (safeText(supplier.provider || 'CJ', 20).toUpperCase() !== 'CJ') {
-    throw new Error(`AVERON product ${product.id} is not configured for CJ fulfilment.`);
-  }
-  if (!safeText(supplier.pid, 200)) {
-    throw new Error(`AVERON product ${product.id} has no CJ product mapping.`);
-  }
-
-  const mappings = Array.isArray(supplier.mappings)
-    ? supplier.mappings.filter(m => m && m.enabled !== false && (m.vid || m.sku))
-    : [];
-  if (!mappings.length) {
-    throw new Error(`AVERON product ${product.id} has no enabled CJ variant mappings.`);
-  }
-
-  const wantedSize = normalizeSupplierOption(item?.size);
-  const wantedColour = normalizeSupplierOption(item?.colour);
-
-  let candidates = mappings.filter(m => normalizeSupplierOption(m.option) === wantedSize);
-  if (!candidates.length && wantedSize) {
-    candidates = mappings.filter(m => normalizeSupplierOption(m.cjLabel).includes(wantedSize));
-  }
-  if (!candidates.length) candidates = mappings;
-
-  if (wantedColour && candidates.length > 1) {
-    const colourMatch = candidates.find(m => normalizeSupplierOption(m.cjLabel).includes(wantedColour));
-    if (colourMatch) candidates = [colourMatch];
-  }
-
-  const mapping = candidates[0];
-  if (!mapping?.vid && !mapping?.sku) {
-    throw new Error(`No CJ variant is mapped for ${product.name || product.id}${wantedSize ? ` size ${item.size}` : ''}${wantedColour ? ` colour ${item.colour}` : ''}.`);
-  }
-
-  return {
-    product,
-    supplier,
-    mapping: {
-      vid: safeText(mapping.vid || '', 200),
-      sku: safeText(mapping.sku || '', 200)
-    }
-  };
+  const product=productMap.get(safeText(item?.product_id,48));
+  const supplier=product?.supplier;
+  if(!supplier?.pid)throw new Error('Product is not ready for fulfilment.');
+  const size=normalizeSupplierOption(item.size), colour=normalizeSupplierOption(item.colour);
+  const candidates=(supplier.mappings||[]).filter(m=>{
+    if(m.enabled===false||!(m.vid||m.sku)||normalizeSupplierOption(m.option)!==size)return false;
+    const parsed=splitCjVariantLabel(m.cjLabel);
+    const swatch=(supplier.colourSwatches||[]).find(c=>normalizeSupplierOption(c.name)===normalizeSupplierOption(parsed.colour));
+    if(swatch?.enabled===false)return false;
+    return colour && (normalizeSupplierOption(parsed.colour)===colour || normalizeSupplierOption(swatch?.displayName)===colour);
+  });
+  if(candidates.length!==1)throw new Error('This size and colour combination is unavailable. Please select it again.');
+  return {product,supplier,mapping:{vid:safeText(candidates[0].vid,200),sku:safeText(candidates[0].sku,200)}};
 }
 
 function cjShippingFromStripeSessionLive(session) {
@@ -611,7 +584,9 @@ async function syncStripeLiveOrderToCj(sessionId) {
     const products = [];
     let orderLogistics = '';
     for (const [index, item] of order.items.entries()) {
-      const {supplier,mapping} = cjLiveVariantFor(item);
+      const mapping=item.supplier_snapshot;
+      if(!mapping||!(mapping.vid||mapping.sku))throw new Error('Legacy order requires manual supplier reconciliation: no frozen variant.');
+      const supplier={logistics:mapping.logistics};
       if (!orderLogistics) {
         orderLogistics = safeText(supplier.logistics || cjLiveLogisticsDefault, 50) || cjLiveLogisticsDefault;
       }
@@ -635,6 +610,8 @@ async function syncStripeLiveOrderToCj(sessionId) {
       cj_updated:Math.floor(Date.now()/1000)
     });
 
+    const currentOrder=dbPrepare('SELECT refund_status,fulfillment_status FROM orders WHERE session_id=?').get(sessionId);
+    if(currentOrder?.refund_status!=='none'||currentOrder?.fulfillment_status!=='not_shipped')throw new Error('Order is held for cancellation/refund review.');
     const createBody = {
       orderNumber:cjOrderNumber,
       ...shipping,
@@ -691,14 +668,42 @@ async function syncStripeLiveOrderToCj(sessionId) {
 }
 
 function queueCjAutomationForPaidStripeSession(session) {
-  if (!session?.id) return;
-  const live = session.livemode === true || String(session.id).startsWith('cs_live_');
-  if (live) {
-    setImmediate(() => syncStripeLiveOrderToCj(session.id).catch(err => console.error('CJ live background sync failed:', err.message)));
-  } else {
-    setImmediate(() => syncStripeTestOrderToCjSandbox(session.id).catch(err => console.error('CJ sandbox background sync failed:', err.message)));
-  }
+  if(!session?.id)return;
+  const live=session.livemode===true||session.id.startsWith('cs_live_');
+  dbPrepare("INSERT OR IGNORE INTO fulfillment_jobs(session_id,live,state,updated) VALUES (?,?,'pending',?)")
+    .run(session.id,live?1:0,Math.floor(Date.now()/1000));
 }
+let workerBusy=false;
+async function runFulfillmentJobs(){
+  if(workerBusy)return;workerBusy=true;
+  try{
+    const jobs=dbPrepare(`SELECT * FROM fulfillment_jobs WHERE state='pending'
+      AND ((live=1 AND ?=1) OR (live=0 AND ?=1))
+      AND EXISTS(SELECT 1 FROM orders WHERE orders.session_id=fulfillment_jobs.session_id AND refund_status='none' AND fulfillment_status='not_shipped')
+      ORDER BY updated LIMIT 10`).all(cjLiveAutomation?1:0,cjStripeSandboxAutomation?1:0);
+    for(const job of jobs){
+      if(!cjApiKey||!stripe||(job.live?!cjLiveAutomation:!cjStripeSandboxAutomation))continue;
+      // One atomic claim, also checks refund/cancellation. Interrupted work is never replayed blindly.
+      const claim=dbPrepare(`UPDATE fulfillment_jobs SET state='running',updated=? WHERE session_id=? AND state='pending'
+        AND EXISTS(SELECT 1 FROM orders WHERE session_id=? AND refund_status='none' AND fulfillment_status='not_shipped')`)
+        .run(Math.floor(Date.now()/1000),job.session_id,job.session_id);
+      if(!claim.changes)continue;
+      try{
+        if(job.live)await syncStripeLiveOrderToCj(job.session_id);
+        else await syncStripeTestOrderToCjSandbox(job.session_id);
+        const result=dbPrepare('SELECT cj_order_id,cj_error FROM orders WHERE session_id=?').get(job.session_id);
+        const ok=Boolean(result?.cj_order_id&&!result?.cj_error);
+        dbPrepare('UPDATE fulfillment_jobs SET state=?,note=?,updated=? WHERE session_id=?')
+          .run(ok?'done':'review',ok?'':'Verify CJ before any retry.',Math.floor(Date.now()/1000),job.session_id);
+      }catch(err){
+        dbPrepare("UPDATE fulfillment_jobs SET state='review',note=?,updated=? WHERE session_id=?")
+          .run(safeText(err.message,240),Math.floor(Date.now()/1000),job.session_id);
+      }
+    }
+  }finally{workerBusy=false;}
+}
+// Pending work survives restart. Running/review jobs require explicit reconciliation.
+setInterval(()=>runFulfillmentJobs().catch(err=>console.error('Fulfilment worker failed:',err.message)),2000).unref();
 
 async function syncStripeTestOrderToCjSandbox(sessionId) {
   if (!cjStripeSandboxAutomation) return;
@@ -783,7 +788,7 @@ async function persistPaidSession(sessionOrId) {
     ? sessionOrId
     : await stripe.checkout.sessions.retrieve(id);
 
-  if (!['paid','no_payment_required'].includes(session.payment_status)) return null;
+  if (session.metadata?.store!=='AVERON'||!['paid','no_payment_required'].includes(session.payment_status)) return null;
 
   const lineItems = await stripe.checkout.sessions.listLineItems(id, {
     limit: 50,
@@ -798,6 +803,7 @@ async function persistPaidSession(sessionOrId) {
       quantity: safeQty(item.quantity || 1),
       size: safeText(metadata.size || '', 20),
       colour: safeText(metadata.colour || '', 40),
+      supplier_snapshot:{vid:safeText(metadata.cj_vid,200),sku:safeText(metadata.cj_sku,200),logistics:safeText(metadata.cj_logistics,50)},
       amount_total: Number.isInteger(item.amount_total) ? item.amount_total : 0,
       currency: safeText(item.currency || session.currency || 'gbp', 8).toLowerCase()
     };
@@ -806,6 +812,8 @@ async function persistPaidSession(sessionOrId) {
   const now = Math.floor(Date.now()/1000);
   const created = Number.isFinite(Number(session.created)) ? Number(session.created) : now;
   const orderRef = orderRefFor(id);
+  dbExec('BEGIN IMMEDIATE');
+  try{
   upsertOrder.run(
     id,
     orderRef,
@@ -822,6 +830,9 @@ async function persistPaidSession(sessionOrId) {
     safeText(typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id || '', 255),
     safeText(session.metadata?.supabase_user_id || '', 100)
   );
+  queueCjAutomationForPaidStripeSession(session);
+  dbExec('COMMIT');
+  }catch(err){dbExec('ROLLBACK');throw err;}
   return rowToOrder(dbPrepare('SELECT * FROM orders WHERE session_id = ?').get(id));
 }
 
@@ -862,7 +873,7 @@ function healthPayload() {
     admin_auth: {status: adminConfigured() ? 'configured' : 'not_configured'},
     secure_cookie: {status: ADMIN_SECURE_COOKIE ? 'enabled' : (production ? 'misconfigured' : 'development')}
   };
-  const coreOk = database.status === 'ok' && (!production || (adminConfigured() && ADMIN_SECURE_COOKIE));
+  const coreOk = database.status === 'ok' && (!production || (adminConfigured() && ADMIN_SECURE_COOKIE && stripe && webhookSecret && supabaseConfigured()));
   return {
     status: coreOk ? 'ok' : 'degraded',
     service:'averon',
@@ -903,6 +914,21 @@ app.post('/webhook', express.raw({type: 'application/json', limit: '1mb'}), asyn
       // CJ order and, only when explicitly enabled, ask CJ to deduct the supplier cost
       // from the CJ account balance. Stripe funds are never transferred directly to CJ.
       if (order) queueCjAutomationForPaidStripeSession(session);
+    } else if (['refund.created','refund.updated','refund.failed'].includes(event.type)) {
+      const refund=await stripe.refunds.retrieve(event.data.object.id);
+      const pi=typeof refund.payment_intent==='string'?refund.payment_intent:refund.payment_intent?.id;
+      const order=dbPrepare('SELECT * FROM orders WHERE payment_intent_id=?').get(pi||'');
+      if(order){
+        // Resolve aggregate refunded amount to handle dashboard/partial refunds too.
+        const intent=await stripe.paymentIntents.retrieve(pi,{expand:['latest_charge']});
+        const charge=intent.latest_charge;
+        const totalRefunded=typeof charge==='object'?Number(charge.amount_refunded||0):0;
+        const status=totalRefunded>=order.amount_total&&order.amount_total>0?'refunded':totalRefunded>0?'partially_refunded':refund.status==='succeeded'?'partially_refunded':['failed','canceled'].includes(refund.status)?'refund_failed':'refund_pending';
+        dbPrepare('UPDATE orders SET refund_status=?,stripe_refund_id=?,updated=? WHERE session_id=?')
+          .run(status,refund.id,Math.floor(Date.now()/1000),order.session_id);
+        dbPrepare('UPDATE refund_requests SET status=?,updated=? WHERE session_id=?')
+          .run(status,Math.floor(Date.now()/1000),order.session_id);
+      }
     } else if (event.type === 'checkout.session.async_payment_failed') {
       console.warn('AVERON delayed payment failed:', event.data.object.id);
     }
@@ -992,7 +1018,32 @@ app.post('/webhook/cj', express.raw({type: 'application/json', limit: '1mb'}), a
 
 // Admin product payloads may include up to three base64-encoded preview images.
 // Keep the CJ webhook raw-body route above this middleware for signature verification.
-app.use(express.json({limit: '96mb'}));
+app.use('/api', (req,res,next)=>{res.setHeader('Cache-Control','no-store');next();});
+const requestBuckets=new Map();
+app.use('/api',(req,res,next)=>{
+  if(req.method==='GET')return next();
+  const key=String(req.ip||req.socket.remoteAddress)+'|'+(req.path.startsWith('/auth')?'auth':'write');
+  const now=Date.now();let bucket=requestBuckets.get(key);
+  if(!bucket||bucket.until<now)bucket={count:0,until:now+60000};
+  requestBuckets.set(key,bucket);
+  if(++bucket.count>60){res.setHeader('Retry-After','60');return res.status(429).json({error:'Too many requests. Please try again shortly.'});}
+  next();
+});
+setInterval(()=>{const now=Date.now();for(const [key,b] of requestBuckets)if(b.until<now)requestBuckets.delete(key);},60000).unref();
+const smallJson=express.json({limit:'128kb'}), adminJson=express.json({limit:'96mb'});
+app.use((req,res,next)=>{
+  if(req.path.startsWith('/api/admin/')&&!req.path.startsWith('/api/admin/auth/'))return requireAdmin(req,res,()=>adminJson(req,res,next));
+  return smallJson(req,res,next);
+});
+async function requireCustomer(req,res,next){
+  res.setHeader('Cache-Control','no-store');
+  if(!sameOriginCustomerRequest(req))return res.status(403).json({error:'Request origin rejected.'});
+  const user=await getCustomerAuth(req,res);
+  if(!user)return res.status(401).json({error:'Sign in to access your order.'});
+  req.customerUser=user;next();
+}
+function ownsOrder(user,order){return Boolean(user?.id && order?.supabase_user_id && user.id===order.supabase_user_id);}
+
 
 // Homepage banner / mini-banner content is persisted server-side so artwork survives
 // refreshes, browser storage limits and different storefront sessions.
@@ -1186,7 +1237,7 @@ app.get('/api/account/orders',async(req,res)=>{
   const user=await getCustomerAuth(req,res);
   if(!user)return res.status(401).json({error:'Sign in to view account orders.'});
   const rows=dbPrepare('SELECT * FROM orders WHERE supabase_user_id=? ORDER BY created DESC LIMIT 100').all(safeText(user.id,100));
-  return res.json({orders:rows.map(row=>{const o=rowToOrder(row);return {id:o.session_id,ref:o.order_ref,payment_status:o.payment_status,customer_email:o.customer_email,amount_total:o.amount_total,currency:o.currency,created:o.created,items:o.items,customer_status:o.customer_status,customer_status_label:o.customer_status_label,tracking_number:o.tracking_number,shipping_method:o.shipping_method,refund_status:o.refund_status};})});
+  return res.json({orders:rows.map(row=>{const o=rowToOrder(row);return {id:o.session_id,ref:o.order_ref,payment_status:o.payment_status,customer_email:o.customer_email,amount_total:o.amount_total,currency:o.currency,created:o.created,items:o.items.map(({supplier_snapshot,...item})=>item),customer_status:o.customer_status,customer_status_label:o.customer_status_label,tracking_number:o.tracking_number,shipping_method:o.shipping_method,refund_status:o.refund_status};})});
 });
 app.post('/api/admin/auth/login',(req,res)=>{res.setHeader('Cache-Control','no-store');if(!adminConfigured())return res.status(503).json({error:'Admin authentication is not configured yet.'});const{key,state,now}=loginAttemptState(req);if(state.blockedUntil&&now<state.blockedUntil)return res.status(429).json({error:'Too many sign-in attempts. Try again in 15 minutes.'});const email=safeText(req.body?.email,160).toLowerCase(),password=String(req.body?.password||'').slice(0,256);if(email!==ADMIN_EMAIL||!verifyAdminPassword(password)){state.count++;if(state.count>=5)state.blockedUntil=now+900000;adminLoginAttempts.set(key,state);return res.status(401).json({error:'Invalid email or password.'})}adminLoginAttempts.delete(key);dbPrepare('DELETE FROM admin_sessions WHERE expires<=?').run(Math.floor(Date.now()/1000));const token=crypto.randomBytes(32).toString('base64url'),created=Math.floor(Date.now()/1000),expires=created+ADMIN_SESSION_HOURS*3600;dbPrepare('INSERT INTO admin_sessions (token_hash,email,created,expires,user_agent_hash) VALUES (?,?,?,?,?)').run(adminTokenHash(token),ADMIN_EMAIL,created,expires,adminUserAgentHash(req));setAdminCookie(res,token);return res.json({ok:true,email:ADMIN_EMAIL,expires})});
 app.get('/api/admin/auth/session',(req,res)=>{res.setHeader('Cache-Control','no-store');const session=getAdminSession(req);if(!session)return res.status(401).json({authenticated:false});return res.json({authenticated:true,email:session.email,expires:session.expires})});
@@ -1219,11 +1270,19 @@ function splitCjVariantLabel(label){
 }
 
 
+function publicProduct(p){
+  const {supplier,...publicFields}=p;
+  return {...publicFields,supplier:{
+    colourSwatches:(supplier?.colourSwatches||[]).map(({name,displayName,hex,enabled})=>({name,displayName,hex,enabled})),
+    mappings:(supplier?.mappings||[]).map(({option,cjLabel,enabled})=>({option,cjLabel,enabled}))
+  }};
+}
+app.get('/api/admin/catalog',(req,res)=>res.json({ok:true,products:catalog}));
 app.get('/api/catalog', (req,res)=>{
   res.setHeader('Cache-Control','no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma','no-cache');
   res.setHeader('Expires','0');
-  return res.json({ok:true,products:catalog});
+  return res.json({ok:true,products:catalog.map(publicProduct)});
 });
 
 app.post('/api/admin/catalog/reorder', (req,res)=>{
@@ -1241,7 +1300,7 @@ app.post('/api/admin/catalog/reorder', (req,res)=>{
       if(id&&!seen.has(id)){seen.add(id);ordered.push(product)}
     }
     catalog.splice(0,catalog.length,...ordered);
-    fs.writeFileSync(path.join(__dirname,'products.server.json'),JSON.stringify(catalog,null,2)+'\n','utf8');
+    fs.writeFileSync(dataFile('products.server.json'),JSON.stringify(catalog,null,2)+'\n','utf8');
     return res.json({ok:true,order:catalog.map(p=>p.id)});
   }catch(err){
     console.error('Admin catalogue reorder failed:',err);
@@ -1256,8 +1315,8 @@ app.delete('/api/admin/catalog/product/:id', (req,res)=>{
     if(catalog.length<=1)return res.status(400).json({error:'Keep at least one product in the catalogue.'});
     const index=catalog.findIndex(p=>safeText(p?.id,48)===id);
     if(index<0)return res.status(404).json({error:'Product not found.'});
-    const [removed]=catalog.splice(index,1);
-    const file=path.join(__dirname,'products.server.json'),tmp=file+'.tmp';
+    const [removed]=catalog.splice(index,1);productMap.delete(id);
+    const file=dataFile('products.server.json'),tmp=file+'.tmp';
     fs.writeFileSync(tmp,JSON.stringify(catalog,null,2)+'\n','utf8');
     fs.renameSync(tmp,file);
     return res.json({ok:true,deleted:id,product:removed});
@@ -1292,15 +1351,15 @@ app.post('/api/admin/catalog/product', (req,res)=>{
     const sizeGuide={enabled:raw.sizeGuide?.enabled===true,image:safeText(raw.sizeGuide?.image,4500000)};
     if(sizeGuide.enabled&&!sizeGuide.image) return res.status(400).json({error:'A Size Guide image is required when Size Guide is enabled.'});
     const shippingCountries=Array.isArray(raw.shippingCountries)?[...new Set(raw.shippingCountries.map(x=>safeText(x,2).toUpperCase()).filter(x=>EUROPE_CHECKOUT_COUNTRIES.includes(x)))]:[];
-    const serverProduct={id,name,price:Math.round(price*100)/100,previousPrice:previousPrice===null?null:Math.round(previousPrice*100)/100,category:safeText(raw.category,40),colour:safeText(raw.colour,60),label:safeText(raw.label,80),description:safeText(raw.description,1200),details:safeText(raw.details,1200),fit:safeText(raw.fit,1200),delivery:safeText(raw.delivery,1200),returns:safeText(raw.returns,1200),coverImage,images,colourImagery,materialCraft,completeLook,sizeGuide,shippingCountries:shippingCountries.length?shippingCountries:[...EUROPE_CHECKOUT_COUNTRIES],supplier:{provider:'CJ',pid,logistics,variants,colourSwatches,mappings}};
+    const serverProduct={id,name,price:Math.round(price*100)/100,previousPrice:previousPrice===null?null:Math.round(previousPrice*100)/100,category:safeText(raw.category,40),colour:safeText(raw.colour,60),label:safeText(raw.label,80),description:safeText(raw.description,1200),details:safeText(raw.details,1200),fit:safeText(raw.fit,1200),delivery:safeText(raw.delivery,1200),returns:safeText(raw.returns,1200),coverImage,images,colourImagery,materialCraft,completeLook,sizeGuide,shippingCountries,supplier:{provider:'CJ',pid,logistics,variants,colourSwatches,mappings}};
     const index=catalog.findIndex(p=>p.id===id);if(index>=0)catalog[index]=serverProduct;else catalog.push(serverProduct);productMap.set(id,serverProduct);
-    fs.writeFileSync(path.join(__dirname,'products.server.json'),JSON.stringify(catalog,null,2)+'\n','utf8');
+    fs.writeFileSync(dataFile('products.server.json'),JSON.stringify(catalog,null,2)+'\n','utf8');
     if(pid){
       const mapped={averon_name:name,cj_product_id:pid,logistics,test_only:true,variants:{}};
       for(const m of mappings){if(m.enabled===false)continue;const entry={vid:m.vid,sku:m.sku,label:m.cjLabel};const size=m.option.toUpperCase();mapped.variants[size]=entry;const parsed=splitCjVariantLabel(m.cjLabel);if(parsed.colour&&parsed.size)mapped.variants[`${parsed.colour.toUpperCase()}|${size}`]=entry;}
       cjSandboxMap[id]=mapped;
     }else delete cjSandboxMap[id];
-    fs.writeFileSync(path.join(__dirname,'cj-sandbox-map.json'),JSON.stringify(cjSandboxMap,null,2)+'\n','utf8');
+    fs.writeFileSync(dataFile('cj-sandbox-map.json'),JSON.stringify(cjSandboxMap,null,2)+'\n','utf8');
     return res.json({ok:true,product:serverProduct,mapped_options:mappings.length});
   } catch(err){console.error('Admin catalogue save failed:',err);return res.status(500).json({error:'Could not persist the product mapping on the server.'});}
 });
@@ -1545,11 +1604,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post('/api/create-checkout-session', async (req, res) => {
+app.post('/api/create-checkout-session', requireCustomer, async (req, res) => {
   if (!stripe) return res.status(503).json({error: 'Stripe is not configured on the server.'});
 
   try {
-    const authUser = await getCustomerAuth(req,res);
+    const authUser = req.customerUser;
     if (!authUser) return res.status(401).json({error:'Sign in to continue to checkout.',code:'AUTH_REQUIRED'});
     const incoming = Array.isArray(req.body?.items) ? req.body.items.slice(0, 50) : [];
     if (!incoming.length) return res.status(400).json({error: 'Your bag is empty.'});
@@ -1560,7 +1619,11 @@ app.post('/api/create-checkout-session', async (req, res) => {
       const id = safeText(raw?.id, 48);
       const product = productMap.get(id);
       if (!product) return res.status(400).json({error: `Unknown product: ${id || 'invalid id'}`});
+      let resolved;
+      try{resolved=cjLiveVariantFor({product_id:id,size:raw?.size,colour:raw?.colour});}
+      catch(err){return res.status(400).json({error:err.message});}
       normalized.push({
+        mapping:resolved.mapping,supplier:resolved.supplier,
         product,
         qty: safeQty(raw?.qty),
         size: safeText(raw?.size || 'M', 20),
@@ -1568,9 +1631,12 @@ app.post('/api/create-checkout-session', async (req, res) => {
       });
     }
 
-    const shippingSets=normalized.map(({product})=>{const configured=Array.isArray(product.shippingCountries)&&product.shippingCountries.length?product.shippingCountries.filter(code=>EUROPE_CHECKOUT_COUNTRIES.includes(code)):[...EUROPE_CHECKOUT_COUNTRIES];return new Set(configured);});
+    const shippingSets=normalized.map(({product})=>{const configured=Array.isArray(product.shippingCountries)?product.shippingCountries.filter(code=>EUROPE_CHECKOUT_COUNTRIES.includes(code)):[...EUROPE_CHECKOUT_COUNTRIES];return new Set(configured);});
     const allowedShippingCountries=EUROPE_CHECKOUT_COUNTRIES.filter(code=>shippingSets.every(set=>set.has(code)));
     if(!allowedShippingCountries.length)return res.status(400).json({error:'The products in your bag do not share a common delivery country. Please adjust your bag and try again.',code:'NO_COMMON_SHIPPING_COUNTRY'});
+    const attempt=safeText(req.body?.attempt_id,80);
+    if(!/^[A-Za-z0-9_-]{16,80}$/.test(attempt))return res.status(400).json({error:'Reload checkout before trying again.'});
+    const checkoutKey=crypto.createHash('sha256').update(authUser.id+'|'+attempt).digest('hex');
     const subtotalPence = normalized.reduce((sum, item) => sum + Math.round(item.product.price * 100) * item.qty, 0);
     const shippingOptions = subtotalPence >= 7500
       ? [
@@ -1582,14 +1648,14 @@ app.post('/api/create-checkout-session', async (req, res) => {
           {shipping_rate_data:{type:'fixed_amount',fixed_amount:{amount:895,currency:'gbp'},display_name:'Express Delivery'}}
         ];
 
-    const lineItems = normalized.map(({product, qty, size, colour}) => ({
+    const lineItems = normalized.map(({product, qty, size, colour,mapping,supplier}) => ({
       quantity: qty,
       price_data: {
         currency: 'gbp',
         unit_amount: Math.round(product.price * 100),
         product_data: {
           name: product.name,
-          metadata: {averon_product_id: product.id, size, colour}
+          metadata: {averon_product_id: product.id, size, colour,cj_vid:mapping.vid,cj_sku:mapping.sku,cj_logistics:supplier.logistics||cjLiveLogisticsDefault}
         }
       }
     }));
@@ -1608,7 +1674,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
       success_url: `${base}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/checkout.html?cancelled=1`,
       metadata: {store: 'AVERON', supabase_user_id: safeText(authUser?.id||'',100)}
-    });
+    },{idempotencyKey:'averon-checkout-'+checkoutKey});
 
     return res.json({url: session.url});
   } catch (err) {
@@ -1617,7 +1683,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
   }
 });
 
-app.get('/api/order-status', (req, res) => {
+app.get('/api/order-status', requireCustomer, (req, res) => {
   res.setHeader('Cache-Control','no-store');
   const sessionId = safeText(req.query?.session_id, 255);
   if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId)) {
@@ -1625,12 +1691,12 @@ app.get('/api/order-status', (req, res) => {
   }
 
   const row = dbPrepare(`
-    SELECT fulfillment_status, refund_status, cj_status, cj_tracking_number, cj_logistics_name
+    SELECT supabase_user_id, fulfillment_status, refund_status, cj_status, cj_tracking_number, cj_logistics_name
     FROM orders
     WHERE session_id = ?
   `).get(sessionId);
 
-  if (!row) return res.status(404).json({error:'Order not found.'});
+  if (!ownsOrder(req.customerUser,row)) return res.status(404).json({error:'Order not found.'});
 
   const display = customerOrderStatus(row);
   return res.json({
@@ -1641,12 +1707,13 @@ app.get('/api/order-status', (req, res) => {
   });
 });
 
-app.get('/api/checkout-session', async (req, res) => {
+app.get('/api/checkout-session', requireCustomer, async (req, res) => {
   if (!stripe) return res.status(503).json({error: 'Stripe is not configured on the server.'});
   const id = safeText(req.query?.session_id, 255);
   if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(id)) return res.status(400).json({error: 'Invalid session id.'});
   try {
     const session = await stripe.checkout.sessions.retrieve(id);
+    if(session.metadata?.supabase_user_id!==req.customerUser.id)return res.status(404).json({error:'Order not found.'});
     const lineItems = await stripe.checkout.sessions.listLineItems(id, {limit: 50, expand:['data.price.product']});
     let order = null;
     if (session.payment_status === 'paid' || session.payment_status === 'no_payment_required') {
@@ -1683,44 +1750,18 @@ app.get('/api/checkout-session', async (req, res) => {
 
 // Local Content Studio order feed.
 // Public deployments must use real server-side authentication before this endpoint is enabled.
-app.post('/api/refund-request', async (req, res) => {
+app.post('/api/refund-request', requireCustomer, async (req, res) => {
   if (!stripe) return res.status(503).json({error:'Stripe is not configured on the server.'});
   const sessionId = safeText(req.body?.session_id, 255);
   const email = safeText(req.body?.customer_email, 160).toLowerCase();
   if (!sessionId || !email) return res.status(400).json({error:'Missing order details.'});
   const order = dbPrepare('SELECT * FROM orders WHERE session_id = ?').get(sessionId);
-  if (!order || String(order.customer_email || '').toLowerCase() !== email) return res.status(404).json({error:'Order could not be verified.'});
+  if (!ownsOrder(req.customerUser,order) || String(order.customer_email || '').toLowerCase() !== email) return res.status(404).json({error:'Order could not be verified.'});
   if (!['paid','no_payment_required'].includes(order.payment_status)) return res.status(409).json({error:'This order is not eligible for a refund.'});
   if (order.refund_status === 'refunded') return res.json({ok:true,status:'refunded',order_ref:order.order_ref,already_refunded:true});
 
   const now = Math.floor(Date.now()/1000);
-  if (order.fulfillment_status === 'not_shipped') {
-    try {
-      let paymentIntentId = safeText(order.payment_intent_id,255);
-      if (!paymentIntentId) {
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
-        paymentIntentId = safeText(typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id || '',255);
-        if (paymentIntentId) dbPrepare('UPDATE orders SET payment_intent_id=?, updated=? WHERE session_id=?').run(paymentIntentId,now,sessionId);
-      }
-      if (!paymentIntentId) return res.status(409).json({error:'This payment cannot be refunded automatically yet. Please contact AVERON support.'});
-      const refund = await stripe.refunds.create({
-        payment_intent: paymentIntentId,
-        metadata: {averon_order_ref: order.order_ref, reason: 'customer_request_before_shipment'}
-      }, {idempotencyKey: `averon-refund-${sessionId}`});
-      const refundStatus = refund.status === 'succeeded' ? 'refunded' : 'refund_pending';
-      dbPrepare(`UPDATE orders SET refund_status=?, stripe_refund_id=?, fulfillment_status=CASE WHEN ?='refunded' THEN 'cancelled' ELSE fulfillment_status END, updated=? WHERE session_id=?`)
-        .run(refundStatus, safeText(refund.id,255), refundStatus, now, sessionId);
-      dbPrepare(`INSERT INTO refund_requests (session_id, order_ref, customer_email, status, requested, updated)
-        VALUES (?, ?, ?, ?, ?, ?)
-        ON CONFLICT(session_id) DO UPDATE SET status=excluded.status, updated=excluded.updated`)
-        .run(sessionId, order.order_ref, order.customer_email, refundStatus, now, now);
-      return res.json({ok:true,status:refundStatus,order_ref:order.order_ref,automatic:true});
-    } catch (err) {
-      console.error('Automatic refund failed:', err.message);
-      return res.status(502).json({error:'Stripe could not complete the refund. The order has not been changed.'});
-    }
-  }
-
+  if (order.refund_status==='refund_pending') return res.json({ok:true,status:'refund_pending'});
   dbPrepare(`INSERT INTO refund_requests (session_id, order_ref, customer_email, status, requested, updated)
     VALUES (?, ?, ?, 'requested', ?, ?)
     ON CONFLICT(session_id) DO UPDATE SET status='requested', updated=excluded.updated`).run(sessionId, order.order_ref, order.customer_email, now, now);
@@ -1746,6 +1787,10 @@ app.post('/api/admin/orders/:sessionId/approve-refund', async (req, res) => {
   if (order.refund_status === 'refunded') return res.json({ok:true,status:'refunded',already_refunded:true});
   const request = dbPrepare('SELECT * FROM refund_requests WHERE session_id=?').get(sessionId);
   if (!request || request.status !== 'requested') return res.status(409).json({error:'There is no pending refund request for this order.'});
+  const job=dbPrepare('SELECT state FROM fulfillment_jobs WHERE session_id=?').get(sessionId);
+  if(job?.state==='running')return res.status(409).json({error:'CJ processing is running or interrupted. Reconcile the CJ order before refund approval.'});
+  if((order.cj_order_id||job?.state==='review')&&req.body?.supplier_resolution_confirmed!==true)
+    return res.status(409).json({error:'Confirm supplier cancellation or return resolution before approving this refund.'});
   try {
     let paymentIntentId = safeText(order.payment_intent_id,255);
     if (!paymentIntentId) {
@@ -1758,7 +1803,7 @@ app.post('/api/admin/orders/:sessionId/approve-refund', async (req, res) => {
       metadata: {averon_order_ref: order.order_ref, reason: 'admin_approved_customer_request'}
     }, {idempotencyKey: `averon-refund-${sessionId}`});
     const now = Math.floor(Date.now()/1000);
-    const refundStatus = refund.status === 'succeeded' ? 'refunded' : 'refund_pending';
+    const refundStatus = refund.status === 'succeeded' ? 'refunded' : ['failed','canceled'].includes(refund.status)?'refund_failed':'refund_pending';
     dbPrepare('UPDATE orders SET payment_intent_id=?, refund_status=?, stripe_refund_id=?, updated=? WHERE session_id=?')
       .run(paymentIntentId,refundStatus,safeText(refund.id,255),now,sessionId);
     dbPrepare('UPDATE refund_requests SET status=?, updated=? WHERE session_id=?').run(refundStatus,now,sessionId);
@@ -2100,37 +2145,52 @@ app.post('/api/admin/cj/sandbox/update-track', async (req, res) => {
 
 
 
-app.post('/api/admin/orders/:sessionId/cj-live-retry', async (req, res) => {
-  const sessionId = safeText(req.params.sessionId,255);
-  if (!String(sessionId).startsWith('cs_live_')) return res.status(400).json({error:'A Stripe live Checkout Session is required.'});
-  if (!cjLiveAutomation) return res.status(409).json({error:'CJ_LIVE_AUTOMATION is disabled.'});
-  const order = dbPrepare('SELECT session_id,cj_order_id FROM orders WHERE session_id=?').get(sessionId);
-  if (!order) return res.status(404).json({error:'Order not found.'});
-  if (order.cj_order_id) return res.status(409).json({error:'This order is already linked to a CJ order and will not be recreated.'});
-  await syncStripeLiveOrderToCj(sessionId);
-  const updated = rowToOrder(dbPrepare('SELECT * FROM orders WHERE session_id=?').get(sessionId));
-  return res.json({ok:Boolean(updated?.cj_order_id),order:updated});
+app.post('/api/admin/orders/:sessionId/cj-live-retry', (req,res)=>{
+  const id=safeText(req.params.sessionId,255);
+  const order=dbPrepare('SELECT * FROM orders WHERE session_id=?').get(id);
+  if(!order)return res.status(404).json({error:'Order not found.'});
+  if(!id.startsWith('cs_live_')||!cjLiveAutomation)return res.status(409).json({error:'Live automation is not enabled for this order.'});
+  if(order.cj_order_id||order.refund_status!=='none'||order.fulfillment_status!=='not_shipped')return res.status(409).json({error:'Order is already linked or held. Do not recreate it.'});
+  // An uncertain provider result is NOT safe to retry automatically.
+  return res.status(409).json({error:'Use Reconcile CJ in the order panel before retrying uncertain work.'});
 });
-
-app.post('/api/admin/orders/:sessionId/cj-sandbox-retry', async (req, res) => {
-  if (!isLocalRequest(req)) return res.status(403).json({error:'CJ sandbox retry is available only on localhost in this build.'});
-  const sessionId = safeText(req.params.sessionId,255);
-  const order = dbPrepare('SELECT session_id FROM orders WHERE session_id=?').get(sessionId);
-  if (!order) return res.status(404).json({error:'Order not found.'});
-  await syncStripeTestOrderToCjSandbox(sessionId);
-  const updated = rowToOrder(dbPrepare('SELECT * FROM orders WHERE session_id=?').get(sessionId));
-  return res.json({ok:updated?.cj_status==='paid_300',order:updated});
+app.post('/api/admin/orders/:sessionId/cj-sandbox-retry',(req,res)=>{
+  const id=safeText(req.params.sessionId,255);
+  if(!id.startsWith('cs_test_'))return res.status(400).json({error:'Test order required.'});
+  return res.status(409).json({error:'Use Reconcile CJ in the order panel. The durable worker prevents duplicate supplier requests.'});
+});
+app.post('/api/admin/orders/:sessionId/cj-reconcile',(req,res)=>{
+  const id=safeText(req.params.sessionId,255),now=Math.floor(Date.now()/1000);
+  const order=dbPrepare('SELECT * FROM orders WHERE session_id=?').get(id);
+  const job=dbPrepare('SELECT * FROM fulfillment_jobs WHERE session_id=?').get(id);
+  if(!order||!job)return res.status(404).json({error:'Order or job not found.'});
+  if(!['running','review'].includes(job.state))return res.status(409).json({error:'This job does not require reconciliation.'});
+  // CJ adapter uses a bounded timeout; allow a generous window for in-flight work.
+  if(job.state==='running'&&now-job.updated<900)return res.status(409).json({error:'Wait 15 minutes after processing started before reconciling interrupted work.'});
+  if(req.body?.supplier_checked!==true)return res.status(400).json({error:'Check the CJ dashboard first.'});
+  const cjId=safeText(req.body?.cj_order_id,200);
+  if(cjId){
+    dbPrepare("UPDATE orders SET cj_order_id=?,cj_status='reconciled_manual',cj_error='',cj_updated=? WHERE session_id=?").run(cjId,now,id);
+    dbPrepare("UPDATE fulfillment_jobs SET state='done',note='Supplier order reconciled by administrator',updated=? WHERE session_id=?").run(now,id);
+  }else if(req.body?.confirmed_no_supplier_order===true){
+    if(order.cj_order_id)return res.status(409).json({error:'An existing supplier order is linked.'});
+    dbPrepare("UPDATE fulfillment_jobs SET state=?,note='Administrator verified no supplier order',updated=? WHERE session_id=?")
+      .run(order.refund_status==='none'&&order.fulfillment_status==='not_shipped'?'pending':'held',now,id);
+  }else return res.status(400).json({error:'Provide the existing CJ order ID or confirm that no order exists.'});
+  return res.json({ok:true});
 });
 
 app.get('/api/admin/orders', (req, res) => {
-  const rows = listOrdersStmt.all(100).map(rowToOrder);
+  const rows = listOrdersStmt.all(100).map(row=>({...rowToOrder(row),fulfillment_job:dbPrepare('SELECT state,note,updated FROM fulfillment_jobs WHERE session_id=?').get(row.session_id)||null}));
   res.setHeader('Cache-Control','no-store');
   return res.json({orders: rows});
 });
 
 app.get(['/admin','/admin/','/admin.html'],requireAdminPage,(req,res)=>res.sendFile(path.join(__dirname,'admin.html')));
+app.get('/admin-layout.html',requireAdminPage,(req,res)=>res.sendFile(path.join(__dirname,'admin-layout.html')));
+app.get('/cj-products.html',requireAdminPage,(req,res)=>res.sendFile(path.join(__dirname,'cj-products.html')));
 app.get('/admin-login.html',(req,res)=>{res.setHeader('Cache-Control','no-store');if(!adminConfigured()){clearAdminCookie(res);return res.sendFile(path.join(__dirname,'admin-login.html'));}if(getAdminSession(req))return res.redirect('/admin.html');return res.sendFile(path.join(__dirname,'admin-login.html'))});
-app.use(express.static(path.join(__dirname), {
+app.use(express.static(PUBLIC_DIR, {
   etag: true,
   maxAge: '1h',
   extensions: ['html'],

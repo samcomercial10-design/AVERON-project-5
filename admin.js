@@ -324,7 +324,7 @@
       const foot=document.createElement('div');foot.className='admin-order-total';const a=document.createElement('span');a.textContent='Order total';const b=document.createElement('span');b.textContent=formatMoney(o.amount_total,o.currency);foot.append(a,b);
       const state=document.createElement('div');state.className='admin-order-state';
       const fulfillment=document.createElement('span');fulfillment.textContent=o.fulfillment_status==='shipped'?'Shipped':o.fulfillment_status==='cancelled'?'Cancelled':'Not shipped';
-      const refund=document.createElement('span');refund.textContent=o.refund_status==='refunded'?'Refunded':o.refund_status==='refund_pending'?'Refund processing':o.refund_status==='requested'?'Refund requested':'No refund request';
+      const refund=document.createElement('span');refund.textContent=o.refund_status==='refunded'?'Refunded':o.refund_status==='refund_pending'?'Refund processing':o.refund_status==='requested'?'Refund requested':o.refund_status==='refund_failed'?'Refund failed — check Stripe':o.refund_status==='partially_refunded'?'Partially refunded':'No refund request';
       const cj=document.createElement('span');
       const cjLabels={not_started:'CJ: waiting',created_100:'CJ Sandbox: created',confirmed_unpaid_200:'CJ Sandbox: confirmed',paid_300:'CJ Sandbox: paid',processing_400:'CJ Sandbox: processing',shipped_500:'CJ Sandbox: shipped',blocked_live_stripe:'CJ: live blocked',disabled_no_key:'CJ: disabled',error:'CJ Sandbox: error'};
       cj.textContent=cjLabels[o.cj_status]||('CJ: '+S.text(o.cj_status||'not started',40));
@@ -335,7 +335,7 @@
         const ship=document.createElement('button');ship.type='button';ship.className='admin-btn';ship.textContent=o.fulfillment_status==='shipped'?'Mark Not Shipped':'Mark Shipped';ship.dataset.orderFulfillment=o.session_id;ship.dataset.nextStatus=o.fulfillment_status==='shipped'?'not_shipped':'shipped';actions.appendChild(ship);
       }
       if(o.refund_status==='requested'){const approve=document.createElement('button');approve.type='button';approve.className='admin-btn primary';approve.textContent='Approve Refund';approve.dataset.approveRefund=o.session_id;actions.appendChild(approve);}
-      if(['error','not_started','disabled_no_key'].includes(o.cj_status||'not_started')){const retry=document.createElement('button');retry.type='button';retry.className='admin-btn';retry.textContent='Retry CJ Sandbox';retry.dataset.retryCj=o.session_id;actions.appendChild(retry);}
+      if(['running','review'].includes(o.fulfillment_job?.state)){const btn=document.createElement('button');btn.type='button';btn.className='admin-btn';btn.textContent='Reconcile CJ';btn.dataset.reconcileCj=o.session_id;actions.appendChild(btn);}
       if(o.cj_error){const err=document.createElement('div');err.className='admin-order-meta';const x=document.createElement('span');x.textContent='CJ: '+S.text(o.cj_error,180);err.appendChild(x);card.append(top,meta,items,foot,state,err,actions);}else{card.append(top,meta,items,foot,state,actions);}list.appendChild(card);
     });
   }
@@ -357,9 +357,17 @@
     const ship=e.target.closest('[data-order-fulfillment]');
     const approve=e.target.closest('[data-approve-refund]');
     const retryCj=e.target.closest('[data-retry-cj]');
+    const reconcile=e.target.closest('[data-reconcile-cj]');
+    if(reconcile){
+      const id=prompt('Check CJ Orders first. Enter the existing CJ order ID, or type NONE only after confirming no supplier order exists.');
+      if(id===null||!id.trim())return;
+      if(!confirm('Confirm you checked the correct order in CJ. Choosing NONE may submit a new supplier order.'))return;
+      reconcile.disabled=true;
+      try{const response=await fetch('/api/admin/orders/'+encodeURIComponent(reconcile.dataset.reconcileCj)+'/cj-reconcile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({supplier_checked:true,cj_order_id:id.trim()==='NONE'?'':id.trim(),confirmed_no_supplier_order:id.trim()==='NONE'})});const data=await response.json();if(!response.ok)throw new Error(data.error);await loadAdminOrders();}catch(err){toast(err.message);reconcile.disabled=false;}
+    }
     if(ship){ship.disabled=true;try{const r=await fetch('/api/admin/orders/'+encodeURIComponent(ship.dataset.orderFulfillment)+'/fulfillment',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({status:ship.dataset.nextStatus})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Unable to update shipping status.');await loadAdminOrders();}catch(err){ship.disabled=false;toast(S.text(err.message||'Unable to update shipping status.',140));}}
     if(retryCj){retryCj.disabled=true;retryCj.textContent='Retrying CJ…';try{const r=await fetch('/api/admin/orders/'+encodeURIComponent(retryCj.dataset.retryCj)+'/cj-sandbox-retry',{method:'POST',headers:{'Accept':'application/json'}});const d=await r.json();if(!r.ok)throw new Error(d.error||'Unable to retry CJ sandbox.');toast(d.order?.cj_status==='paid_300'?'CJ Sandbox order is paid.':'CJ Sandbox retry finished.');await loadAdminOrders();}catch(err){retryCj.disabled=false;retryCj.textContent='Retry CJ Sandbox';toast(S.text(err.message||'Unable to retry CJ sandbox.',140));}}
-    if(approve){if(!confirm('Approve this refund and send it to Stripe now?'))return;approve.disabled=true;approve.textContent='Refunding…';try{const r=await fetch('/api/admin/orders/'+encodeURIComponent(approve.dataset.approveRefund)+'/approve-refund',{method:'POST',headers:{'Accept':'application/json'}});const d=await r.json();if(!r.ok)throw new Error(d.error||'Unable to approve refund.');toast(d.status==='refunded'?'Refund completed.':'Refund sent to Stripe.');await loadAdminOrders();}catch(err){approve.disabled=false;approve.textContent='Approve Refund';toast(S.text(err.message||'Unable to approve refund.',140));}}
+    if(approve){if(!confirm('Confirm that any CJ order has been cancelled or its return/refund resolved with the supplier. Approve the Stripe refund now?'))return;approve.disabled=true;approve.textContent='Refunding…';try{const r=await fetch('/api/admin/orders/'+encodeURIComponent(approve.dataset.approveRefund)+'/approve-refund',{method:'POST',headers:{'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify({supplier_resolution_confirmed:true})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Unable to approve refund.');toast(d.status==='refunded'?'Refund completed.':'Refund sent to Stripe.');await loadAdminOrders();}catch(err){approve.disabled=false;approve.textContent='Approve Refund';toast(S.text(err.message||'Unable to approve refund.',140));}}
   });
 
   // -------- Homepage banner editor --------
@@ -578,7 +586,7 @@ $('banner-hotspot-add').addEventListener('click',()=>{if(bannerHotspots.length>=
   $('logout-btn').textContent='Sign Out';$('logout-btn').onclick=async()=>{try{await fetch('/api/admin/auth/logout',{method:'POST',headers:{Accept:'application/json'}})}catch(_){}location.replace('/admin-login.html')};
   adminReady.then(async()=>{
     try{
-      const r=await fetch('/api/catalog',{headers:{Accept:'application/json'},cache:'no-store'});
+      const r=await fetch('/api/admin/catalog',{headers:{Accept:'application/json'},cache:'no-store'});
       const data=await r.json();
       if(r.ok&&Array.isArray(data.products)&&data.products.length){
         products=S.products(data.products,defaults);
