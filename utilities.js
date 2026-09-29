@@ -89,7 +89,7 @@
       const back=S.el('button','utility-text-btn account-auth-switch','Back to sign in');back.type='button';form.append(submit,back);box.appendChild(form);back.onclick=()=>renderAccount('login');
       form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;const f=new FormData(form);try{const r=await fetch('/api/auth/password/recover',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({email:f.get('email')})});const data=await r.json();if(!r.ok)throw new Error(data.error||'Unable to send the reset email.');form.replaceChildren();form.append(S.el('span','eyebrow','Check your inbox'),S.el('h4','','Reset link sent'),S.el('p','account-note',data.message||'If an account exists for that email, a password reset link has been sent.'));const done=S.el('button','utility-text-btn','Back to sign in');done.type='button';done.onclick=()=>renderAccount('login');form.append(done)}catch(err){submit.disabled=false;accountMessage(form,err.message||'Unable to send the reset email.',true)}};return;
     }
-    const registering=mode==='register';const form=S.el('form','account-form');form.append(S.el('span','eyebrow',registering?'New client':'Private Client'),S.el('h4','',registering?'Create your AVERON account':'Sign in to AVERON'));
+    const registering=mode==='register';const form=S.el('form','account-form');if(registering)form.append(S.el('span','eyebrow','New client'),S.el('h4','','Create your AVERON account'));
     if(registering){const grid=S.el('div','account-form-grid');grid.append(accountField('First name','firstName'),accountField('Last name','lastName'));form.append(grid)}
     form.append(accountField('Email address','email','email'));
     const pass=accountField('Password','password','password');pass.querySelector('input').autocomplete=registering?'new-password':'current-password';pass.querySelector('input').minLength=8;form.append(pass);
@@ -104,6 +104,16 @@
   }
 
   document.addEventListener('DOMContentLoaded',()=>{
+    /* The desktop reference groups Menu and Search on the left. Move the
+       existing functional search trigger instead of duplicating it. */
+    const header=document.querySelector('header.site'),navLeft=header?.querySelector('.nav-left'),navRight=header?.querySelector('.nav-right');
+    if(navLeft&&navRight){
+      const burger=navLeft.querySelector('.burger');
+      if(burger){burger.classList.add('labelled-header-action');burger.dataset.actionLabel='Menu'}
+      const search=navRight.querySelector('[data-open-search]');
+      if(search){search.classList.add('labelled-header-action','desktop-search-trigger');search.dataset.actionLabel='Search';navLeft.appendChild(search)}
+      navLeft.querySelector('.nav-links')?.classList.add('desktop-category-links');
+    }
     document.querySelectorAll('[data-open-search]').forEach(b=>b.addEventListener('click',()=>{document.querySelector('[data-mobile-menu]')?.classList.remove('open');renderSearch('');openUtility(document.querySelector('[data-search-drawer]'));setTimeout(()=>document.querySelector('[data-search-input]')?.focus(),100)}));
     document.querySelectorAll('[data-open-account]').forEach(b=>b.addEventListener('click',async()=>{document.querySelector('[data-mobile-menu]')?.classList.remove('open');await loadAccountSession();renderAccount(accountState.authenticated?'auto':'login');openUtility(document.querySelector('[data-account-drawer]'))}));
     document.querySelectorAll('a[href="checkout.html"]').forEach(link=>link.addEventListener('click',async e=>{if(link.dataset.authBypass==='true')return;await loadAccountSession();if(accountState.authenticated)return;e.preventDefault();await openLogin('checkout.html')}));

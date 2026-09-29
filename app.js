@@ -51,7 +51,7 @@
        early when [data-cart-items] was absent, leaving checkout at £0.00. */
     const sub=subtotal(), remaining=Math.max(0,FREE_DELIVERY-sub), pct=Math.min(100,(sub/FREE_DELIVERY)*100);
     const delivery=sub===0?0:(sub>=FREE_DELIVERY?0:4.95);
-    document.querySelectorAll('[data-cart-count]').forEach(node=>{const n=state.cart.reduce((s,i)=>s+i.qty,0);node.textContent=String(n);node.style.display=n?'flex':'none'});
+    document.querySelectorAll('[data-cart-count]').forEach(node=>{const n=state.cart.reduce((s,i)=>s+i.qty,0);node.textContent=String(n);node.style.display='flex'});
     document.querySelectorAll('[data-free-fill]').forEach(node=>node.style.width=pct+'%');
     document.querySelectorAll('[data-free-msg]').forEach(node=>node.textContent=remaining>0?`You're £${remaining.toFixed(2)} away from free standard delivery.`:`You've unlocked free standard delivery.`);
     document.querySelectorAll('[data-subtotal]').forEach(node=>node.textContent=money(sub));
