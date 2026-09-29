@@ -2428,3 +2428,808 @@ header.site [data-open-cart] .badge-count{
   .header-reference-right .header-bag-icon svg{width:21px !important;height:21px !important;}
   .header-reference-right .badge-count{position:absolute !important;top:-5px !important;right:-7px !important;min-width:15px !important;height:15px !important;padding:0 3px !important;font-size:9px !important;line-height:15px !important;border-radius:999px !important;}
 }
+
+/* ==========================================================
+   AVERON — Editorial typography scale from approved reference
+   2026-09-29
+   ========================================================== */
+@media (min-width:761px){
+  /* Small editorial headings share the same scale across the homepage. */
+  body[data-seo-page="home"] .editorial-copy .eyebrow,
+  body[data-seo-page="home"] .collection .section-head .eyebrow,
+  body[data-seo-page="home"] .products .section-head .eyebrow,
+  body[data-seo-page="home"] .edit-section .section-head .eyebrow,
+  body[data-seo-page="home"] .philosophy > .wrap > .eyebrow{
+    font-size:14px !important;
+    line-height:1.2;
+    letter-spacing:.20em;
+    font-weight:500;
+  }
+
+  /* Refined Essentials block: larger, airier and deliberately two lines. */
+  body[data-seo-page="home"] .editorial-copy{
+    align-self:center;
+    max-width:760px;
+  }
+  body[data-seo-page="home"] .editorial-copy .eyebrow{
+    margin-top:0 !important;
+    margin-bottom:0 !important;
+  }
+  body[data-seo-page="home"] .editorial-copy .h-1{
+    margin-top:22px !important;
+    max-width:760px;
+    font-size:clamp(48px,3.7vw,66px);
+    line-height:.98;
+    letter-spacing:.015em;
+  }
+  body[data-seo-page="home"] .editorial-copy .body-lg{
+    margin-top:24px !important;
+    max-width:650px !important;
+    font-size:17px;
+    line-height:1.45;
+    letter-spacing:.055em;
+  }
+  body[data-seo-page="home"] .editorial-copy .link-underline{
+    margin-top:34px !important;
+    font-size:12px;
+    letter-spacing:.10em;
+    font-weight:600;
+  }
+}
+
+/* ==========================================================
+   AVERON — DESKTOP ONLY editorial scale, matched to reference
+   Mobile intentionally untouched for a later dedicated pass.
+   ========================================================== */
+@media (min-width:1024px){
+  body[data-seo-page="home"] .editorial{padding:112px 0 118px;}
+  body[data-seo-page="home"] .editorial-grid{
+    grid-template-columns:minmax(420px,.88fr) minmax(650px,1.22fr);
+    gap:58px;
+    align-items:center;
+  }
+  body[data-seo-page="home"] .editorial-copy{
+    max-width:none;
+    width:100%;
+    padding:0;
+    text-align:left;
+    align-items:flex-start;
+  }
+  body[data-seo-page="home"] .editorial-copy .eyebrow,
+  body[data-seo-page="home"] .collection .section-head .eyebrow,
+  body[data-seo-page="home"] .products .section-head .eyebrow,
+  body[data-seo-page="home"] .edit-section .section-head .eyebrow,
+  body[data-seo-page="home"] .philosophy > .wrap > .eyebrow{
+    font-size:16px !important;
+    line-height:1.15 !important;
+    letter-spacing:.19em !important;
+    font-weight:500 !important;
+  }
+  body[data-seo-page="home"] .editorial-copy .h-1{
+    margin-top:20px !important;
+    width:100%;
+    max-width:none !important;
+    font-size:clamp(58px,4.15vw,72px) !important;
+    line-height:.96 !important;
+    letter-spacing:-.018em !important;
+  }
+  body[data-seo-page="home"] .editorial-copy .body-lg{
+    margin-top:22px !important;
+    max-width:720px !important;
+    font-size:18px !important;
+    line-height:1.42 !important;
+    letter-spacing:.055em !important;
+    text-align:left !important;
+  }
+  body[data-seo-page="home"] .editorial-copy .link-underline{
+    margin-top:38px !important;
+    font-size:13px !important;
+    letter-spacing:.11em !important;
+  }
+
+  /* Equivalent homepage section labels inherit the same larger reference scale. */
+  body[data-seo-page="home"] .collection .section-head .eyebrow,
+  body[data-seo-page="home"] .products .section-head .eyebrow,
+  body[data-seo-page="home"] .edit-section .section-head .eyebrow{
+    font-size:16px !important;
+  }
+}
+
+/* AVERON — desktop editorial composition correction v7 */
+@media (min-width:1024px){
+  body[data-seo-page="home"] .editorial{padding:82px 0 92px !important;}
+  body[data-seo-page="home"] .editorial-grid.wrap{
+    width:min(92vw,1360px) !important;
+    max-width:1360px !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+    grid-template-columns:minmax(0,41%) minmax(0,59%) !important;
+    gap:34px !important;
+    align-items:center !important;
+  }
+  body[data-seo-page="home"] .editorial-figure{
+    width:100% !important;
+    justify-self:end !important;
+  }
+  body[data-seo-page="home"] .editorial-copy{
+    width:100% !important;
+    max-width:none !important;
+    justify-self:start !important;
+    padding:0 0 0 8px !important;
+  }
+  body[data-seo-page="home"] .editorial-copy .eyebrow{
+    margin-top:0 !important;
+    margin-bottom:0 !important;
+  }
+  body[data-seo-page="home"] .editorial-copy .h-1{
+    margin-top:14px !important;
+    width:100% !important;
+    max-width:none !important;
+    font-size:clamp(52px,3.85vw,64px) !important;
+    line-height:1.00 !important;
+    letter-spacing:-.018em !important;
+  }
+  body[data-seo-page="home"] .editorial-copy .h-1 br{display:block !important;}
+  body[data-seo-page="home"] .editorial-copy .body-lg{
+    margin-top:14px !important;
+    max-width:720px !important;
+  }
+  body[data-seo-page="home"] .editorial-copy .link-underline{
+    margin-top:30px !important;
+  }
+}
+
+/* AVERON — desktop The Collection rule: fixed 2px thickness at every desktop viewport */
+@media (min-width:1024px){
+  body[data-seo-page="home"] .collection .section-head .eyebrow::before,
+  body[data-seo-page="home"] .collection .section-head .eyebrow::after{
+    height:2px !important;
+    min-height:2px !important;
+    max-height:2px !important;
+    flex-basis:2px;
+    transform:none !important;
+  }
+}
+
+/* AVERON — desktop left navigation drawer */
+@media (min-width: 769px){
+  .mobile-menu{
+    inset:0 auto 0 0;
+    width:min(430px, 34vw);
+    min-width:360px;
+    height:100dvh;
+    transform:translateX(-100%);
+    transition:transform .45s var(--ease), box-shadow .45s var(--ease), visibility .45s;
+    padding:30px 38px 34px;
+    box-shadow:none;
+  }
+  .mobile-menu.open{
+    transform:translateX(0);
+    box-shadow:20px 0 60px rgba(0,41,63,.16);
+  }
+  .mobile-menu-top{margin-bottom:38px;}
+  .mobile-menu nav{margin-top:18px;}
+  .mobile-menu a{font-size:29px;padding:12px 0;}
+}
+
+
+/* ==========================================================
+   AVERON — desktop navigation/search drawers refinement v12
+   Desktop only. Mobile presentation intentionally unchanged.
+   ========================================================== */
+@media (min-width:769px){
+  /* Main navigation: restrained, editorial, left-side panel. */
+  .mobile-menu{
+    inset:0 auto 0 0 !important;
+    width:min(410px,30vw) !important;
+    min-width:370px !important;
+    height:100dvh !important;
+    padding:0 36px 34px !important;
+    background:#00334A !important;
+    transform:translateX(-100%) !important;
+    transition:transform .42s var(--ease),box-shadow .42s var(--ease) !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+  }
+  .mobile-menu.open{
+    transform:translateX(0) !important;
+    box-shadow:18px 0 52px rgba(0,41,63,.18) !important;
+  }
+  .mobile-menu-top{
+    min-height:116px !important;
+    margin:0 0 18px !important;
+    padding:28px 0 22px !important;
+    border-bottom:1px solid rgba(243,239,230,.16) !important;
+    justify-content:flex-start !important;
+  }
+  .mobile-menu-top::before{display:none !important;content:none !important;}
+  .mobile-menu-top .footer-wordmark{
+    width:178px !important;
+    max-height:34px !important;
+    margin:0 !important;
+    object-fit:contain !important;
+    object-position:left center !important;
+  }
+  .mobile-menu-top [data-close-menu]{
+    display:flex !important;
+    position:absolute !important;
+    right:0 !important;
+    top:50% !important;
+    width:36px !important;
+    height:36px !important;
+    transform:translateY(-50%) !important;
+    border:1px solid rgba(243,239,230,.30) !important;
+  }
+  .mobile-menu-top [data-close-menu] svg{width:18px !important;height:18px !important;}
+  .mobile-menu nav{
+    margin:8px 0 28px !important;
+    border:0 !important;
+  }
+  .mobile-menu nav a{
+    min-height:0 !important;
+    padding:13px 0 12px !important;
+    border-bottom:1px solid rgba(243,239,230,.13) !important;
+    display:block !important;
+    font-family:var(--font-serif) !important;
+    font-size:25px !important;
+    font-weight:400 !important;
+    line-height:1.08 !important;
+    letter-spacing:.005em !important;
+    text-align:left !important;
+    color:var(--warm-white) !important;
+  }
+  .mobile-menu nav a::after{display:none !important;content:none !important;}
+  .mobile-menu nav a[href="product.html"]{display:none !important;}
+  .mobile-menu-foot{
+    order:3 !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:8px !important;
+    margin:auto 0 0 !important;
+    padding:22px 0 0 !important;
+    border-top:1px solid rgba(243,239,230,.16) !important;
+  }
+  .mobile-menu .mobile-utility-btn{
+    min-height:39px !important;
+    padding:8px 5px !important;
+    border:1px solid rgba(243,239,230,.42) !important;
+    font-size:9px !important;
+    letter-spacing:.13em !important;
+  }
+  .mobile-menu-newsletter{
+    order:2 !important;
+    margin:24px 0 0 !important;
+    padding:0 0 22px !important;
+    border:0 !important;
+    text-align:left !important;
+  }
+  .mobile-menu-newsletter .eyebrow{
+    margin:0 0 8px !important;
+    font-size:9px !important;
+    letter-spacing:.20em !important;
+    color:var(--gold-soft) !important;
+  }
+  .mobile-menu-newsletter-copy{
+    max-width:30ch !important;
+    margin:0 0 14px !important;
+    font-size:12px !important;
+    line-height:1.5 !important;
+    color:rgba(243,239,230,.74) !important;
+  }
+  .mobile-menu-newsletter-form{
+    max-width:100% !important;
+    gap:0 !important;
+    padding:0 !important;
+    border:1px solid rgba(243,239,230,.30) !important;
+  }
+  .mobile-menu-newsletter-form input{padding:10px 11px !important;font-size:11px !important;}
+  .mobile-menu-newsletter-form button{padding:10px 12px !important;font-size:9px !important;}
+  .mobile-menu-newsletter-note{
+    max-width:34ch !important;
+    margin:8px 0 0 !important;
+    font-size:9px !important;
+    line-height:1.45 !important;
+    color:rgba(243,239,230,.46) !important;
+  }
+
+  /* Search uses the same left-side interaction language as navigation. */
+  .utility-drawer[data-search-drawer]{
+    left:0 !important;
+    right:auto !important;
+    width:min(500px,36vw) !important;
+    min-width:430px !important;
+    transform:translateX(-100%) !important;
+    box-shadow:none !important;
+  }
+  .utility-drawer[data-search-drawer].open{
+    transform:translateX(0) !important;
+    box-shadow:18px 0 52px rgba(0,41,63,.14) !important;
+  }
+}
+
+/* ==========================================================
+   AVERON — unified drawer close controls + smooth menu close v13
+   Desktop only. Uses the shopping-bag close button as reference.
+   ========================================================== */
+@media (min-width:769px){
+  /* All header drawers use one static close-button language. */
+  .utility-close,
+  .cart-close,
+  .mobile-menu-top [data-close-menu]{
+    width:34px !important;
+    height:34px !important;
+    min-width:34px !important;
+    min-height:34px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border:1px solid #938f87 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    color:var(--navy) !important;
+    box-shadow:none !important;
+    transform:none !important;
+    transition:none !important;
+    cursor:pointer !important;
+  }
+  .utility-close:hover,
+  .utility-close:focus-visible,
+  .cart-close:hover,
+  .cart-close:focus-visible,
+  .mobile-menu-top [data-close-menu]:hover,
+  .mobile-menu-top [data-close-menu]:focus-visible{
+    border-color:#938f87 !important;
+    background:transparent !important;
+    color:var(--navy) !important;
+    box-shadow:none !important;
+    transform:none !important;
+  }
+  .utility-close svg,
+  .cart-close svg,
+  .mobile-menu-top [data-close-menu] svg{
+    width:18px !important;
+    height:18px !important;
+    display:block !important;
+    pointer-events:none !important;
+  }
+
+  /* The navigation panel is navy, so the same control receives the warm
+     AVERON surface behind it while retaining the exact bag-button geometry. */
+  .mobile-menu-top{position:relative !important;}
+  .mobile-menu-top [data-close-menu]{
+    position:absolute !important;
+    right:0 !important;
+    top:50% !important;
+    margin:0 !important;
+    background:var(--warm-white) !important;
+    transform:translateY(-50%) !important;
+  }
+  .mobile-menu-top [data-close-menu]:hover,
+  .mobile-menu-top [data-close-menu]:focus-visible{
+    background:var(--warm-white) !important;
+    transform:translateY(-50%) !important;
+  }
+
+  /* Match the deliberate slide timing used by the other header drawers. */
+  .mobile-menu{
+    transition:transform .52s var(--ease),box-shadow .52s var(--ease) !important;
+    will-change:transform;
+  }
+  .mobile-menu.open{transform:translateX(0) !important;}
+}
+
+
+
+/* ==========================================================
+   AVERON — smooth desktop navigation exit v14
+   Keep the drawer visible while its translateX close transition completes.
+   ========================================================== */
+@media (min-width:769px){
+  .mobile-menu{
+    visibility:hidden !important;
+    pointer-events:none !important;
+    transition:
+      transform .52s var(--ease),
+      box-shadow .52s var(--ease),
+      visibility 0s linear .52s !important;
+  }
+  .mobile-menu.open{
+    visibility:visible !important;
+    pointer-events:auto !important;
+    transition:
+      transform .52s var(--ease),
+      box-shadow .52s var(--ease),
+      visibility 0s linear 0s !important;
+  }
+}
+
+
+/* ==========================================================
+   AVERON — premium desktop navigation composition v15
+   Reference-led redesign. Desktop only; mobile untouched.
+   ========================================================== */
+.averon-menu-action-icon,.averon-menu-market{display:none;}
+@media (min-width:769px){
+  .mobile-menu{
+    width:min(496px,34vw) !important;
+    min-width:430px !important;
+    padding:0 42px 30px !important;
+    background:#00334A !important;
+  }
+  .mobile-menu-top{
+    min-height:142px !important;
+    margin:0 0 0 !important;
+    padding:32px 0 28px !important;
+    border-bottom:1px solid rgba(215,177,104,.66) !important;
+  }
+  .mobile-menu-top .footer-wordmark{
+    width:244px !important;
+    max-height:52px !important;
+  }
+  /* Retain the previously approved static bag-style close control. */
+  .mobile-menu-top [data-close-menu]{right:0 !important;top:50% !important;}
+
+  .mobile-menu nav{
+    position:relative !important;
+    margin:0 0 0 !important;
+    padding:76px 0 0 !important;
+  }
+  .mobile-menu nav::before{
+    content:"SHOP";
+    position:absolute;
+    left:0;
+    top:38px;
+    color:var(--gold-soft);
+    font-family:var(--font-sans, "Inter", Arial, sans-serif);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.30em;
+    line-height:1;
+  }
+  .mobile-menu nav a{
+    position:relative !important;
+    min-height:86px !important;
+    padding:0 38px 0 0 !important;
+    display:flex !important;
+    align-items:center !important;
+    border-bottom:1px solid rgba(243,239,230,.19) !important;
+    font-family:var(--font-sans, "Inter", Arial, sans-serif) !important;
+    font-size:25px !important;
+    font-weight:400 !important;
+    line-height:1 !important;
+    letter-spacing:.13em !important;
+    text-transform:uppercase !important;
+    color:var(--warm-white) !important;
+  }
+  .mobile-menu nav a::after{
+    content:"›" !important;
+    display:block !important;
+    position:absolute !important;
+    right:4px !important;
+    top:50% !important;
+    transform:translateY(-54%) !important;
+    color:var(--gold-soft) !important;
+    font-family:Georgia,serif !important;
+    font-size:38px !important;
+    font-weight:300 !important;
+    line-height:.7 !important;
+  }
+  .mobile-menu nav a[href="product.html"]{display:none !important;}
+
+  .mobile-menu-newsletter{
+    order:2 !important;
+    margin:48px 0 0 !important;
+    padding:0 !important;
+  }
+  .mobile-menu-newsletter .eyebrow{
+    margin:0 0 18px !important;
+    color:var(--gold-soft) !important;
+    font-size:11px !important;
+    font-weight:600 !important;
+    letter-spacing:.30em !important;
+  }
+  .mobile-menu-newsletter-copy{
+    max-width:390px !important;
+    margin:0 0 24px !important;
+    color:rgba(243,239,230,.92) !important;
+    font-family:var(--font-serif) !important;
+    font-size:18px !important;
+    line-height:1.48 !important;
+  }
+  .mobile-menu-newsletter-form{
+    width:100% !important;
+    max-width:none !important;
+    min-height:64px !important;
+    display:grid !important;
+    grid-template-columns:1fr 98px !important;
+    border:1px solid rgba(243,239,230,.82) !important;
+    background:transparent !important;
+  }
+  .mobile-menu-newsletter-form input{
+    min-width:0 !important;
+    padding:0 22px !important;
+    border:0 !important;
+    background:transparent !important;
+    color:var(--warm-white) !important;
+    font-size:11px !important;
+    letter-spacing:.18em !important;
+    text-transform:uppercase !important;
+  }
+  .mobile-menu-newsletter-form input::placeholder{color:rgba(243,239,230,.78) !important;opacity:1;}
+  .mobile-menu-newsletter-form button{
+    padding:0 !important;
+    border:0 !important;
+    background:#D7B168 !important;
+    color:#00334A !important;
+    font-size:11px !important;
+    font-weight:600 !important;
+    letter-spacing:.19em !important;
+  }
+  .mobile-menu-newsletter-note{
+    max-width:390px !important;
+    margin:14px 0 0 !important;
+    color:rgba(243,239,230,.58) !important;
+    font-size:10px !important;
+    line-height:1.55 !important;
+  }
+
+  .mobile-menu-foot{
+    order:3 !important;
+    margin:auto 0 0 !important;
+    padding:24px 0 0 !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:0 !important;
+    border-top:1px solid rgba(243,239,230,.24) !important;
+  }
+  .mobile-menu .mobile-utility-btn{
+    position:relative !important;
+    min-height:48px !important;
+    padding:0 14px !important;
+    border:0 !important;
+    border-right:1px solid rgba(243,239,230,.25) !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:10px !important;
+    color:var(--warm-white) !important;
+    background:transparent !important;
+    font-size:9px !important;
+    font-weight:600 !important;
+    letter-spacing:.16em !important;
+  }
+  .mobile-menu .mobile-utility-btn:last-child{border-right:0 !important;}
+  .averon-menu-action-icon{
+    display:inline-flex !important;
+    width:24px !important;
+    height:24px !important;
+    flex:0 0 24px !important;
+    color:var(--gold-soft) !important;
+  }
+  .averon-menu-action-icon svg{width:100%;height:100%;display:block;}
+  .averon-menu-market{
+    order:4 !important;
+    margin:20px 0 0 !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:9px !important;
+    color:rgba(243,239,230,.82) !important;
+    font-size:9px !important;
+    font-weight:500 !important;
+    letter-spacing:.22em !important;
+    text-transform:uppercase !important;
+  }
+  .averon-menu-market .market-chevron{color:var(--gold-soft);font-size:18px;line-height:1;transform:translateY(-2px);}
+}
+
+/* ==========================================================
+   AVERON — desktop navigation simplification v16
+   Based on the approved reference: compact panel, SHOP only.
+   Desktop only; mobile remains untouched.
+   ========================================================== */
+@media (min-width:769px){
+  .mobile-menu{
+    width:min(410px,31vw) !important;
+    min-width:380px !important;
+    padding:0 32px 28px !important;
+  }
+
+  .mobile-menu-top{
+    min-height:118px !important;
+    padding:26px 0 24px !important;
+    border-bottom:1px solid rgba(215,177,104,.68) !important;
+  }
+  .mobile-menu-top .footer-wordmark{
+    width:196px !important;
+    max-height:42px !important;
+  }
+
+  /* Menu-only close control: faithful to the supplied reference. */
+  .mobile-menu-top [data-close-menu],
+  .mobile-menu-top [data-close-menu]:hover,
+  .mobile-menu-top [data-close-menu]:focus-visible{
+    width:42px !important;
+    height:42px !important;
+    min-width:42px !important;
+    min-height:42px !important;
+    right:0 !important;
+    top:50% !important;
+    padding:0 !important;
+    border:1px solid #D7B168 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    color:var(--warm-white) !important;
+    box-shadow:none !important;
+    transform:translateY(-50%) !important;
+    transition:none !important;
+  }
+  .mobile-menu-top [data-close-menu] svg{
+    width:20px !important;
+    height:20px !important;
+    stroke-width:1.45 !important;
+  }
+
+  .mobile-menu nav{
+    margin:0 !important;
+    padding:62px 0 0 !important;
+    border:0 !important;
+    outline:0 !important;
+    box-shadow:none !important;
+  }
+  .mobile-menu nav::before{
+    top:30px !important;
+    font-size:10px !important;
+    letter-spacing:.30em !important;
+  }
+  .mobile-menu nav a{
+    min-height:70px !important;
+    padding:0 34px 0 0 !important;
+    border-bottom:1px solid rgba(243,239,230,.18) !important;
+    font-size:21px !important;
+    letter-spacing:.15em !important;
+  }
+  .mobile-menu nav a::after{
+    right:3px !important;
+    font-size:32px !important;
+  }
+
+  /* The desktop drawer now contains only brand + SHOP navigation. */
+  .mobile-menu-newsletter,
+  .mobile-menu-foot,
+  .averon-menu-market{
+    display:none !important;
+  }
+}
+
+
+/* AVERON checkout minimal header — 2026-09-29 */
+.checkout-minimal-header .checkout-minimal-nav{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:88px;
+}
+.checkout-minimal-header .logo-mark{
+  position:static;
+  transform:none;
+  margin:0;
+}
+@media (max-width:768px){
+  .checkout-minimal-header .checkout-minimal-nav{min-height:72px;}
+}
+
+
+/* ==========================================================
+   AVERON — desktop header counters: wishlist + bag states
+   2026-09-29
+   Mobile intentionally unchanged.
+   ========================================================== */
+@media (min-width:769px){
+  /* One fixed counter scale for both utilities. */
+  .header-reference-right .header-heart-icon .badge-count,
+  .header-reference-right .header-bag-icon .badge-count{
+    position:absolute !important;
+    top:-7px !important;
+    right:-8px !important;
+    width:17px !important;
+    min-width:17px !important;
+    height:17px !important;
+    padding:0 !important;
+    border-radius:50% !important;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-sizing:border-box;
+    font-family:var(--font-sans) !important;
+    font-size:9px !important;
+    font-weight:700 !important;
+    line-height:17px !important;
+    color:#fff !important;
+    border:2px solid var(--off-white) !important;
+  }
+
+  /* Wishlist: no counter at zero; gold heart + petrol counter when active. */
+  .header-reference-right .wishlist-header-btn:not(.has-items) .badge-count{
+    display:none !important;
+  }
+  .header-reference-right .wishlist-header-btn:not(.has-items) .heart-icon{
+    stroke:#514e49 !important;
+    fill:none !important;
+  }
+  .header-reference-right .wishlist-header-btn.has-items .heart-icon{
+    stroke:var(--gold) !important;
+    fill:none !important;
+  }
+  .header-reference-right .wishlist-header-btn.has-items .badge-count{
+    display:flex !important;
+    background:var(--navy) !important;
+  }
+
+  /* Bag: always shows the quantity. Zero = neutral grey; items = petrol. */
+  .header-reference-right .header-bag-icon{
+    color:#514e49 !important;
+  }
+  .header-reference-right .header-bag-icon:not(.has-items) .badge-count{
+    display:flex !important;
+    background:#77736d !important;
+  }
+  .header-reference-right .header-bag-icon.has-items .badge-count{
+    display:flex !important;
+    background:var(--navy) !important;
+  }
+}
+
+/* AVERON — active bag icon matches active wishlist on desktop */
+@media (min-width:769px){
+  .header-reference-right .header-bag-icon.has-items{
+    color:var(--gold) !important;
+  }
+  .header-reference-right .header-bag-icon.has-items svg{
+    stroke:var(--gold) !important;
+  }
+}
+
+
+/* AVERON — Product page desktop refinement + clean PDP (v20) */
+@media (min-width:1025px){
+  .pdp{padding-top:34px;padding-bottom:110px}
+  .pdp > .wrap{width:min(1180px,calc(100% - 96px));max-width:1180px}
+  .pdp-grid{grid-template-columns:minmax(0,1.16fr) minmax(340px,.84fr);gap:48px;align-items:start}
+  .pdp-info{padding-top:8px}
+  .pdp-info > .eyebrow,
+  .pdp-rating,
+  .pdp-shipping-note{display:none!important}
+  .pdp-info .name{
+    margin:0 0 12px;
+    max-width:520px;
+    font-size:clamp(44px,3.45vw,58px);
+    line-height:.98;
+    letter-spacing:.01em;
+    text-transform:uppercase;
+    overflow-wrap:normal;
+  }
+  .pdp-price-block{margin-top:0}
+  .pdp-previous-price{font-size:13px;margin-bottom:4px;color:#a84444;text-decoration-thickness:1px}
+  .pdp-price{font-size:21px;line-height:1.15}
+  .pdp-block{margin-top:26px}
+  .pdp-block > .caption{margin-bottom:10px}
+  .swatches{gap:9px}
+  .swatch{width:31px;height:31px}
+  .sizes{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-width:330px}
+  .size-btn{padding:10px 0}
+  .qty-stepper{height:38px}
+  .pdp-ctas{gap:10px;margin-top:26px}
+  .pdp-ctas .btn{min-height:44px}
+  .pdp-ctas [data-layout-id="product-buy-now"]{order:1;background:var(--navy);color:var(--warm-white);border-color:var(--navy)}
+  .pdp-ctas [data-layout-id="product-add-to-bag"]{order:2;background:transparent;color:var(--navy);border:1px solid var(--navy)}
+  .pdp-wishlist-link{justify-content:center;width:100%;margin-top:3px!important;color:var(--charcoal-soft)}
+  .accordion{margin-top:30px}
+  .accordion-trigger{padding:17px 0;font-size:11px}
+  .accordion-item:nth-child(n+4){display:none}
+  .accordion-item.open .accordion-body{max-height:240px}
+  .breadcrumb{margin-bottom:14px}
+  .breadcrumbs{margin-bottom:14px}
+}

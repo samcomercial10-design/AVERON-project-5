@@ -23,6 +23,15 @@
   window.dispatchEvent(new CustomEvent('averon:product-rendered',{detail:p}));
   const wish=document.querySelector('[data-wishlist-btn]');if(wish){wish.dataset.wishlistBtn=p.id;window.AVERON_syncWishlistUI?.();}
   const clean = value => S.text(value || '',120);
+  const normaliseSize=value=>clean(value).replace(/\s+/g,'').toUpperCase();
+  let preferredSize='';
+  try{
+    const profileResponse=await fetch('/api/auth/session',{headers:{Accept:'application/json'},cache:'no-store'});
+    if(profileResponse.ok){
+      const profileData=await profileResponse.json();
+      if(profileData?.authenticated&&profileData?.user?.size)preferredSize=clean(profileData.user.size);
+    }
+  }catch{}
   const knownSize = /^(?:XXXS|XXS|XS|S|M|L|XL|XXL|XXXL|[2-9]XL|[0-9]{1,3}(?:CM)?)$/i;
   function splitVariantLabel(label){
     const raw=clean(label);if(!raw)return {colour:'',size:''};
@@ -88,7 +97,9 @@
   const sizeWrap=document.querySelector('.sizes');
   function renderSizes(){
     if(!sizeWrap)return;const opts=sizesForColour();sizeWrap.replaceChildren();
-    opts.forEach((opt,i)=>{const b=document.createElement('button');b.className='size-btn'+(i===0?' active':'');b.dataset.size=opt;b.type='button';b.textContent=opt;b.addEventListener('click',()=>{sizeWrap.querySelectorAll('[data-size]').forEach(x=>x.classList.remove('active'));b.classList.add('active')});sizeWrap.appendChild(b)});
+    const preferredIndex=preferredSize?opts.findIndex(opt=>normaliseSize(opt)===normaliseSize(preferredSize)):-1;
+    const activeIndex=preferredIndex>=0?preferredIndex:0;
+    opts.forEach((opt,i)=>{const b=document.createElement('button');b.className='size-btn'+(i===activeIndex?' active':'');b.dataset.size=opt;b.type='button';b.textContent=opt;b.addEventListener('click',()=>{sizeWrap.querySelectorAll('[data-size]').forEach(x=>x.classList.remove('active'));b.classList.add('active')});sizeWrap.appendChild(b)});
     if(!opts.length){const e=document.createElement('span');e.className='body';e.textContent='One size';sizeWrap.appendChild(e)}
   }
   renderColours();renderSizes();

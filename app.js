@@ -51,7 +51,9 @@
        early when [data-cart-items] was absent, leaving checkout at £0.00. */
     const sub=subtotal(), remaining=Math.max(0,FREE_DELIVERY-sub), pct=Math.min(100,(sub/FREE_DELIVERY)*100);
     const delivery=sub===0?0:(sub>=FREE_DELIVERY?0:4.95);
-    document.querySelectorAll('[data-cart-count]').forEach(node=>{const n=state.cart.reduce((s,i)=>s+i.qty,0);node.textContent=String(n);node.style.display='flex'});
+    const cartCount=state.cart.reduce((s,i)=>s+i.qty,0);
+    document.querySelectorAll('[data-cart-count]').forEach(node=>{node.textContent=String(cartCount);node.style.display='flex'});
+    document.querySelectorAll('[data-open-cart]').forEach(btn=>btn.classList.toggle('has-items',cartCount>0));
     document.querySelectorAll('[data-free-fill]').forEach(node=>node.style.width=pct+'%');
     document.querySelectorAll('[data-free-msg]').forEach(node=>node.textContent=remaining>0?`You're £${remaining.toFixed(2)} away from free standard delivery.`:`You've unlocked free standard delivery.`);
     document.querySelectorAll('[data-subtotal]').forEach(node=>node.textContent=money(sub));
@@ -131,6 +133,7 @@
       node.textContent=String(state.wishlist.length);
       node.style.display=state.wishlist.length?'flex':'none';
     });
+    document.querySelectorAll('.wishlist-header-btn').forEach(btn=>btn.classList.toggle('has-items',state.wishlist.length>0));
   }
 
   function toggleWishlist(rawId){
@@ -166,8 +169,25 @@
       const note=document.createElement('p');note.className='mobile-menu-newsletter-note';note.textContent='By joining, you agree to receive AVERON emails. Unsubscribe anytime.';
       form.append(input,join);box.append(kicker,copy,form,note);menu.append(box);
     }
-    const openMenu=()=>{if(!menu)return;menu.classList.add('open');document.body.style.overflow='hidden'};
-    const closeMenu=()=>{if(!menu)return;menu.classList.remove('open');document.body.style.overflow=''};
+    // Desktop navigation presentation: utility icons and market line.
+    if(menu && !menu.querySelector('.averon-menu-market')){
+      const icons={
+        search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.2"></circle><path d="m15.2 15.2 4.3 4.3"></path></svg>',
+        account:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.4" r="3.2"></circle><path d="M6.2 20c.4-4.1 2.6-6.2 5.8-6.2s5.4 2.1 5.8 6.2"></path></svg>',
+        wishlist:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20 4.8 13.1C1.3 9.7 3.3 4.3 7.7 4.3c1.8 0 3.3.9 4.3 2.2 1-1.3 2.5-2.2 4.3-2.2 4.4 0 6.4 5.4 2.9 8.8L12 20Z"></path></svg>'
+      };
+      menu.querySelectorAll('.mobile-utility-btn').forEach(btn=>{
+        const key=(btn.textContent||'').trim().toLowerCase();
+        if(icons[key]&&!btn.querySelector('.averon-menu-action-icon')){
+          const span=document.createElement('span');span.className='averon-menu-action-icon';span.setAttribute('aria-hidden','true');span.innerHTML=icons[key];btn.prepend(span);
+        }
+      });
+      const market=document.createElement('div');market.className='averon-menu-market';market.setAttribute('aria-label','Store market and currency');market.innerHTML='<span>United Kingdom</span><span aria-hidden="true">·</span><span>GBP</span><span class="market-chevron" aria-hidden="true">⌄</span>';menu.append(market);
+    }
+    const openMenu=()=>{if(!menu)return;menu.classList.add('open');if(window.innerWidth>=769)document.querySelector('[data-overlay]')?.classList.add('open');document.body.style.overflow='hidden'};
+    const closeMenu=()=>{if(!menu)return;menu.classList.remove('open');document.querySelector('[data-overlay]')?.classList.remove('open');document.body.style.overflow=''};
+    // Close the desktop navigation when the dimmed page area is clicked.
+    document.querySelector('[data-overlay]')?.addEventListener('click',()=>{if(menu?.classList.contains('open'))closeMenu()});
     document.querySelectorAll('[data-open-menu]').forEach(b=>b.addEventListener('click',openMenu));
     document.querySelectorAll('[data-close-menu]').forEach(b=>b.addEventListener('click',closeMenu));
     menu?.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',closeMenu));
