@@ -4899,3 +4899,105 @@ body.checkout-body footer.checkout-footer .checkout-footer-copyright span{color:
     flex-basis:38px !important;
   }
 }
+
+/* ==========================================================================
+   AVERON — drawer header alignment + mobile single-line titles v44
+   Search remains the visual reference. Keeps approved drawer content intact.
+   ========================================================================== */
+
+.utility-head,
+[data-wishlist-drawer] .utility-head,
+[data-account-drawer] .utility-head,
+.cart-head{
+  align-items:center !important;
+}
+
+.utility-head > div,
+[data-wishlist-drawer] .utility-head > div,
+[data-account-drawer] .utility-head > div{
+  min-width:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-self:stretch !important;
+}
+
+.utility-close,
+.cart-close{
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  min-height:38px !important;
+  flex:0 0 38px !important;
+  align-self:center !important;
+  aspect-ratio:1 / 1 !important;
+}
+
+[data-wishlist-drawer] .utility-close{
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  min-height:38px !important;
+  flex-basis:38px !important;
+  aspect-ratio:1 / 1 !important;
+  margin:0 !important;
+}
+
+.mobile-menu-top [data-close-menu],
+.mobile-menu-top [data-close-menu]:hover,
+.mobile-menu-top [data-close-menu]:focus-visible,
+.mobile-menu-top [data-close-menu]:active{
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  min-height:38px !important;
+  padding:0 !important;
+  transform:translateY(-50%) !important;
+  transition:none !important;
+  animation:none !important;
+  box-shadow:none !important;
+  scale:1 !important;
+}
+.mobile-menu-top [data-close-menu]:hover{
+  background:transparent !important;
+  border-color:#c7a25f !important;
+}
+
+@media (max-width:768px){
+  .utility-head,
+  [data-wishlist-drawer] .utility-head,
+  [data-account-drawer] .utility-head,
+  .cart-head{
+    min-height:100px !important;
+    padding:22px 24px !important;
+    align-items:center !important;
+  }
+
+  .utility-head .eyebrow,
+  [data-wishlist-drawer] .utility-head .eyebrow,
+  [data-account-drawer] .utility-head .eyebrow{
+    font-size:10px !important;
+    margin-bottom:7px !important;
+  }
+
+  .utility-head h3,
+  [data-wishlist-drawer] .utility-head h3,
+  [data-account-drawer] .utility-head h3,
+  .cart-head h3{
+    font-size:24px !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+  }
+
+  .utility-close,
+  .cart-close,
+  [data-wishlist-drawer] .utility-close{
+    width:38px !important;
+    height:38px !important;
+    min-width:38px !important;
+    min-height:38px !important;
+    flex-basis:38px !important;
+    margin:0 !important;
+  }
+}
+
