@@ -71,15 +71,39 @@
   function accountField(label,name,type='text',value='',required=true){const l=document.createElement('label');l.appendChild(S.el('span','',label));const input=document.createElement('input');input.name=name;input.type=type;input.required=required;input.value=S.text(value,type==='email'?160:60);input.autocomplete=type==='email'?'email':(type==='password'?'current-password':(name==='firstName'?'given-name':'family-name'));l.appendChild(input);return l}
   function sizeField(value=''){const l=document.createElement('label');l.appendChild(S.el('span','','Preferred size'));const select=document.createElement('select');select.name='size';['XS','S','M','L','XL','32','34','36'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;if(value===v)o.selected=true;select.appendChild(o)});l.appendChild(select);return l}
   async function renderAccount(mode='auto'){
-    const box=document.querySelector('[data-account-view]');if(!box)return;box.replaceChildren();
+    const box=document.querySelector('[data-account-view]');const accountDrawer=document.querySelector('[data-account-drawer]');if(accountDrawer)accountDrawer.classList.remove('account-authenticated');if(!box)return;box.replaceChildren();
     if(!accountState.loaded){box.append(S.el('p','account-note','Checking your account…'));await loadAccountSession();box.replaceChildren();}
     if(!accountState.configured){box.append(S.el('span','eyebrow','Account setup'),S.el('h4','','Customer login is ready for Supabase'),S.el('p','account-note','Add SUPABASE_URL and SUPABASE_ANON_KEY to the server environment to activate account creation and sign-in.'));return}
     const a=accountState.user;
     if(accountState.authenticated&&a&&mode!=='edit'){
-      const initials=((S.text(a.firstName,40)[0]||'')+(S.text(a.lastName,40)[0]||'')).toUpperCase()||'AV';const card=S.el('div','account-card');card.append(S.el('div','account-monogram',initials),S.el('span','eyebrow','Private Client'),S.el('h4','',[a.firstName,a.lastName].filter(Boolean).join(' ')||'AVERON client'),S.el('p','',a.email||''));box.appendChild(card);
-      const links=S.el('div','account-links');const editBtn=S.el('button','account-link-profile','');editBtn.type='button';editBtn.append(S.el('span','','Profile details'),S.el('span','account-link-arrow','→'));const savedCount=wishlist().length;const wishBtn=S.el('button',savedCount?'account-link-saved':'account-link-saved account-link-muted','');wishBtn.type='button';wishBtn.append(S.el('span','','Saved pieces'),S.el('span','account-link-count',String(savedCount)));wishBtn.setAttribute('aria-disabled',savedCount?'false':'true');const orders=S.el('a','','');orders.href='orders.html';orders.append(S.el('span','','Orders'),S.el('span','account-link-arrow','→'));const checkout=S.el('a','','');checkout.href='checkout.html';checkout.append(S.el('span','','Checkout'),S.el('span','account-link-arrow','→'));links.append(editBtn,wishBtn,orders,checkout);box.appendChild(links);
-      const logout=S.el('button','utility-text-btn account-signout','Sign out');logout.type='button';box.append(logout,S.el('p','account-note','Your account is authenticated securely through AVERON using Supabase Auth.'));
-      editBtn.onclick=()=>renderAccount('edit');wishBtn.onclick=()=>{if(!wishlist().length)return;renderWishlist();openUtility(document.querySelector('[data-wishlist-drawer]'))};logout.onclick=async()=>{logout.disabled=true;await fetch('/api/auth/logout',{method:'POST',headers:{Accept:'application/json'}}).catch(()=>{});accountState={loaded:true,configured:true,authenticated:false,user:null};syncMenuProfile();renderAccount('login')};return;
+      if(accountDrawer)accountDrawer.classList.add('account-authenticated');
+      const initials=((S.text(a.firstName,40)[0]||'')+(S.text(a.lastName,40)[0]||'')).trim().toUpperCase()||'AV';
+      const card=S.el('button','account-profile-card-ref');card.type='button';
+      const monogram=S.el('span','account-profile-monogram-ref',initials);
+      const copy=S.el('span','account-profile-copy-ref');
+      const name=S.el('span','account-profile-name-ref',`${a.firstName||''} ${a.lastName||''}`.trim()||'AVERON client');
+      const email=S.el('span','account-profile-email-ref',a.email||'');
+      copy.append(name,email);card.append(monogram,copy);box.appendChild(card);
+      const links=S.el('div','account-profile-links-ref');
+      function createRow(label,action,countText=''){
+        const btn=S.el('button','account-link-ref');btn.type='button';
+        const left=S.el('span','account-link-label-ref',label);
+        btn.appendChild(left);
+        if(countText!==''&&countText!=null){btn.appendChild(S.el('span','account-link-count-ref',String(countText)));}
+        else btn.appendChild(S.el('span','account-link-arrow-ref','›'));
+        btn.onclick=action;return btn;
+      }
+      const favCount=wishlist().length;
+      const profileRow=createRow('Profile Details',()=>renderAccount('edit'));
+      const savedRow=createRow('Saved Pieces',()=>{closeUtilities();openDrawer('wishlist')},favCount);
+      const orders=createRow('Orders',()=>{window.location.href='orders.html';});
+      const checkout=createRow('Checkout',()=>{window.location.href='checkout.html';});
+      links.append(profileRow,savedRow,orders,checkout);box.appendChild(links);
+      const logout=S.el('button','utility-text-btn account-signout-ref','Sign out');logout.type='button';box.appendChild(logout);
+      box.appendChild(S.el('p','account-auth-note-ref','Your account is authenticated securely through AVERON using Supabase Auth.'));
+      card.onclick=()=>renderAccount('edit');
+      logout.onclick=async()=>{logout.disabled=true;await fetch('/api/auth/logout',{method:'POST',headers:{'content-type':'application/json'},body:'{}'}).catch(()=>{});accountState={loaded:true,configured:accountState.configured,authenticated:false,user:null};syncMenuProfile();renderAccount('login')};
+      return;
     }
     if(accountState.authenticated&&a&&mode==='edit'){
       const form=S.el('form','account-form');const grid=S.el('div','account-form-grid');grid.append(accountField('First name','firstName','text',a.firstName||''),accountField('Last name','lastName','text',a.lastName||''));form.append(grid,sizeField(a.size||''));const save=S.el('button','btn btn-primary btn-block','Save profile');save.type='submit';const cancel=S.el('button','utility-text-btn','Cancel');cancel.type='button';form.append(save,cancel);box.appendChild(form);cancel.onclick=()=>renderAccount('auto');form.onsubmit=async e=>{e.preventDefault();save.disabled=true;const f=new FormData(form);try{const r=await fetch('/api/auth/profile',{method:'PUT',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({firstName:f.get('firstName'),lastName:f.get('lastName'),size:f.get('size')})});const data=await r.json();if(!r.ok)throw new Error(data.error||'Unable to update profile.');accountState.user=data.user;syncMenuProfile();renderAccount('auto')}catch(err){save.disabled=false;accountMessage(form,err.message||'Unable to update profile.',true)}};return;

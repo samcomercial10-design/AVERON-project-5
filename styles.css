@@ -4714,3 +4714,55 @@ body.checkout-body footer.checkout-footer .checkout-footer-copyright span{color:
     box-sizing:border-box !important;
   }
 }
+
+
+/* ==========================================================================
+   AVERON — Profile drawer reference refinement v40
+   Faithful account drawer layout based on supplied reference.
+   ========================================================================== */
+[data-account-drawer].account-authenticated .utility-head{display:none!important}
+[data-account-drawer].account-authenticated .utility-body{padding:28px clamp(24px,4vw,42px) 42px!important}
+.account-profile-card-ref{
+  width:100%;display:flex;align-items:center;gap:18px;padding:2px 0 26px;margin:0 0 18px;
+  border:0;border-bottom:1px solid var(--grey-line);background:transparent;text-align:left;cursor:pointer
+}
+.account-profile-monogram-ref{
+  width:60px;height:60px;flex:0 0 60px;border:1px solid rgba(180,145,86,.7);display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-serif);font-size:18px;letter-spacing:.03em;color:var(--navy)
+}
+.account-profile-copy-ref{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.account-profile-name-ref{
+  font-family:var(--font-serif);font-size:24px;line-height:1.02;letter-spacing:.02em;color:#2e261f;text-transform:uppercase
+}
+.account-profile-email-ref{
+  font-size:13px;line-height:1.35;color:#6f675f;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.account-profile-links-ref{display:flex;flex-direction:column;border-top:0}
+.account-link-ref{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;
+  padding:16px 0;border:0;border-bottom:1px solid var(--grey-line);background:transparent;
+  text-align:left;cursor:pointer
+}
+.account-link-label-ref{
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;color:var(--navy)
+}
+.account-link-arrow-ref{
+  color:var(--navy);font-size:18px;line-height:1;transform:translateY(-1px)
+}
+.account-link-count-ref{
+  min-width:22px;height:22px;padding:0 5px;border:1px solid rgba(54,48,42,.18);display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;line-height:1;color:#8e857b;background:#f6f1e7
+}
+.account-signout-ref{
+  margin-top:26px;padding:0;border:0;background:transparent;color:#e54150;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;text-decoration:underline;text-underline-offset:4px;cursor:pointer
+}
+.account-auth-note-ref{
+  margin:18px 0 0;font-size:12px;line-height:1.55;color:#8e857b;max-width:44ch
+}
+@media (max-width:768px){
+  .account-profile-monogram-ref{width:56px;height:56px;flex-basis:56px;font-size:17px}
+  .account-profile-name-ref{font-size:21px;line-height:1.04}
+  .account-profile-email-ref{font-size:12px}
+  .account-link-ref{padding:15px 0}
+}
