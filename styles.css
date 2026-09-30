@@ -5001,3 +5001,13 @@ body.checkout-body footer.checkout-footer .checkout-footer-copyright span{color:
   }
 }
 
+
+/* AVERON — Search title exact mobile line break v45 */
+.search-mobile-break{display:none;}
+@media (max-width:768px){
+  [aria-label="Search"] .utility-head h3,
+  [data-search-drawer] .utility-head h3{
+    white-space:normal !important;
+  }
+  .search-mobile-break{display:block !important;}
+}
