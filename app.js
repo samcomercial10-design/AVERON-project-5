@@ -184,7 +184,7 @@
       });
       const market=document.createElement('div');market.className='averon-menu-market';market.setAttribute('aria-label','Store market and currency');market.innerHTML='<span>United Kingdom</span><span aria-hidden="true">·</span><span>GBP</span><span class="market-chevron" aria-hidden="true">⌄</span>';menu.append(market);
     }
-    const openMenu=()=>{if(!menu)return;menu.classList.add('open');document.querySelector('[data-overlay]')?.classList.add('open');document.body.style.overflow='hidden'};
+    const openMenu=()=>{if(!menu)return;menu.classList.add('open');if(window.innerWidth>=769)document.querySelector('[data-overlay]')?.classList.add('open');document.body.style.overflow='hidden'};
     const closeMenu=()=>{if(!menu)return;menu.classList.remove('open');document.querySelector('[data-overlay]')?.classList.remove('open');document.body.style.overflow=''};
     // Close the desktop navigation when the dimmed page area is clicked.
     document.querySelector('[data-overlay]')?.addEventListener('click',()=>{if(menu?.classList.contains('open'))closeMenu()});
