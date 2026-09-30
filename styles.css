@@ -4286,3 +4286,404 @@ body.checkout-body footer.checkout-footer .checkout-footer-copyright span{color:
     display:none !important;
   }
 }
+
+
+/* ==========================================================================
+   AVERON — side menu + wishlist visual refinement v36
+   ========================================================================== */
+.mobile-menu{display:flex!important;flex-direction:column!important;background:#00334A!important}
+.mobile-menu-top{position:relative!important;min-height:108px!important;margin:0!important;padding:25px 0 20px!important;border-bottom:0!important;display:flex!important;align-items:center!important}
+.mobile-menu-top .footer-wordmark{width:176px!important;max-height:40px!important;object-fit:contain!important;object-position:left center!important}
+.mobile-menu-top [data-close-menu],
+.mobile-menu-top [data-close-menu]:hover,
+.mobile-menu-top [data-close-menu]:focus-visible{position:absolute!important;right:0!important;top:50%!important;transform:translateY(-50%)!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;padding:0!important;border:1px solid #D7B168!important;border-radius:0!important;background:transparent!important;color:var(--warm-white)!important;box-shadow:none!important;transition:none!important}
+.mobile-menu-top [data-close-menu] svg{width:20px!important;height:20px!important;stroke-width:1.45!important}
+
+.menu-client-profile{appearance:none;border:0;background:transparent;color:var(--warm-white);padding:0;margin:0;display:flex;align-items:center;gap:10px;min-width:0;max-width:calc(100% - 64px);text-align:left;cursor:pointer}
+.menu-client-profile[hidden]{display:none!important}
+.menu-client-monogram{width:46px;height:46px;flex:0 0 46px;border:1px solid #D7B168;display:grid;place-items:center;font-family:var(--font-serif);font-size:19px;line-height:1;color:var(--warm-white)}
+.menu-client-copy{min-width:0;display:flex;flex-direction:column;gap:1px}
+.menu-client-email{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-sans);font-size:9px;line-height:1.15;color:rgba(243,239,230,.83);letter-spacing:0;text-transform:none}
+.menu-client-name{display:flex;align-items:center;gap:5px;min-width:0;font-family:var(--font-sans);font-size:17px;line-height:1.1;color:var(--warm-white);letter-spacing:0;text-transform:none;white-space:nowrap}
+.menu-client-arrow{color:var(--gold-soft);font-family:Georgia,serif;font-size:25px;line-height:.7;transform:translateY(-1px)}
+
+.mobile-menu nav{position:relative!important;margin:0!important;padding:47px 0 0!important;border:0!important}
+.mobile-menu nav::before{content:"SHOP"!important;position:absolute!important;left:0!important;top:15px!important;font-family:var(--font-sans)!important;color:var(--gold-soft)!important;font-size:13px!important;font-weight:400!important;line-height:1!important;letter-spacing:0!important}
+.mobile-menu nav a[href="index.html#new-in"],.mobile-menu nav a[href="product.html"]{display:none!important}
+.mobile-menu nav a{position:relative!important;min-height:66px!important;padding:0 32px 0 0!important;display:flex!important;align-items:center!important;border-bottom:1px solid rgba(243,239,230,.16)!important;font-family:var(--font-sans)!important;font-size:18px!important;font-weight:400!important;line-height:1!important;letter-spacing:0!important;text-transform:none!important;color:var(--warm-white)!important}
+.mobile-menu nav a::after{content:"›"!important;position:absolute!important;right:3px!important;top:50%!important;transform:translateY(-53%)!important;color:var(--warm-white)!important;font-family:Georgia,serif!important;font-size:23px!important;font-weight:300!important;line-height:1!important}
+.mobile-menu-newsletter,.averon-menu-market{display:none!important}
+.mobile-menu-foot{margin:28px 0 0!important;padding:0!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;border:0!important}
+.mobile-menu .mobile-utility-btn{min-width:0!important;min-height:50px!important;padding:8px 5px!important;border:1px solid rgba(215,177,104,.48)!important;border-radius:0!important;background:transparent!important;color:var(--warm-white)!important;font-size:9px!important;font-weight:600!important;letter-spacing:.10em!important;text-transform:uppercase!important}
+.mobile-menu .mobile-utility-btn .averon-menu-action-icon{display:none!important}
+
+@media (min-width:769px){
+  .mobile-menu{width:min(410px,34vw)!important;min-width:380px!important;padding:0 30px 32px!important}
+  .mobile-menu-top{min-height:112px!important}
+  .mobile-menu-foot{display:grid!important}
+}
+@media (max-width:768px){
+  .mobile-menu{width:min(89vw,388px)!important;padding:0 28px calc(26px + env(safe-area-inset-bottom))!important}
+  .mobile-menu-top{min-height:105px!important;padding:23px 0 18px!important}
+  .mobile-menu nav{padding-top:46px!important}
+  .mobile-menu nav::before{top:15px!important}
+  .mobile-menu nav a{min-height:66px!important;font-size:18px!important}
+  .mobile-menu-foot{margin-top:28px!important;gap:7px!important}
+}
+
+/* Wishlist */
+[data-wishlist-drawer]{background:#fbf8f1!important}
+[data-wishlist-drawer] .utility-head{min-height:94px!important;padding:21px 26px 20px!important;border-bottom:1px solid rgba(54,48,42,.12)!important;align-items:flex-start!important}
+[data-wishlist-drawer] .utility-head .eyebrow{display:block!important;margin:0 0 5px!important;color:var(--gold)!important;font-size:10px!important;font-weight:500!important;line-height:1!important;letter-spacing:.18em!important;text-transform:uppercase!important}
+[data-wishlist-drawer] .utility-head h3{margin:0!important;color:var(--navy)!important;font-family:var(--font-serif)!important;font-size:23px!important;font-weight:400!important;line-height:1!important;letter-spacing:.015em!important;text-transform:uppercase!important}
+[data-wishlist-drawer] .utility-close{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;margin:0!important}
+[data-wishlist-drawer] .utility-body{min-height:calc(100dvh - 94px)!important;padding:0 26px 38px!important;display:flex!important;flex-direction:column!important}
+[data-wishlist-items]{flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important}
+[data-wishlist-items]>.wishlist-empty-state{width:100%!important;max-width:330px!important;margin:auto!important;padding:0 0 52px!important;transform:translateY(-3%)!important;display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center!important}
+[data-wishlist-items]>.wishlist-empty-state .empty-heart{width:38px!important;height:38px!important;margin:0 0 28px!important;display:grid!important;place-items:center!important;color:#B38D4E!important;font-size:0!important;line-height:1!important}
+[data-wishlist-items]>.wishlist-empty-state .empty-heart svg{width:34px!important;height:34px!important;display:block!important}
+[data-wishlist-items]>.wishlist-empty-state h4{margin:0 0 8px!important;color:var(--navy)!important;font-family:var(--font-serif)!important;font-size:23px!important;font-weight:400!important;line-height:1.08!important;letter-spacing:.02em!important;text-transform:uppercase!important}
+[data-wishlist-items]>.wishlist-empty-state p{max-width:280px!important;margin:0!important;color:#625d55!important;font-size:13px!important;line-height:1.55!important}
+[data-wishlist-items]>.wishlist-empty-state .btn{min-width:168px!important;min-height:46px!important;margin-top:26px!important;padding:0 20px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border:1px solid var(--navy)!important;border-radius:0!important;background:transparent!important;color:var(--navy)!important;font-size:10px!important;font-weight:600!important;line-height:1!important;letter-spacing:.15em!important;text-transform:uppercase!important}
+
+@media (max-width:768px){
+  [data-wishlist-drawer]{width:min(92vw,368px)!important}
+  [data-wishlist-drawer] .utility-head{min-height:94px!important;padding:21px 25px 20px!important}
+  [data-wishlist-drawer] .utility-body{min-height:calc(100dvh - 94px)!important;padding:0 25px calc(34px + env(safe-area-inset-bottom))!important}
+  [data-wishlist-items]>.wishlist-empty-state{max-width:300px!important;padding-bottom:42px!important}
+}
+
+
+/* ==========================================================================
+   AVERON — exact reference menu + wishlist refinement v37
+   Applies only to the side navigation and wishlist drawer.
+   ========================================================================== */
+
+/* ---------------- Connected-account block ---------------- */
+.menu-client-profile{
+  width:auto !important;
+  max-width:calc(100% - 62px) !important;
+  min-height:48px !important;
+  gap:9px !important;
+}
+.menu-client-monogram{
+  width:42px !important;
+  height:42px !important;
+  flex-basis:42px !important;
+  font-size:18px !important;
+  border-color:#c7a25f !important;
+}
+.menu-client-copy{gap:0 !important;}
+.menu-client-email{
+  max-width:185px !important;
+  font-size:8.5px !important;
+  line-height:1.05 !important;
+  color:rgba(243,239,230,.78) !important;
+}
+.menu-client-name{
+  font-size:16px !important;
+  line-height:1.08 !important;
+  font-weight:400 !important;
+}
+.menu-client-arrow{
+  margin-left:2px !important;
+  font-size:22px !important;
+  color:var(--warm-white) !important;
+}
+
+/* ---------------- Side menu composition ---------------- */
+.mobile-menu{
+  background:#00334A !important;
+}
+.mobile-menu-top{
+  min-height:100px !important;
+  padding:22px 0 16px !important;
+  align-items:center !important;
+}
+.mobile-menu-top [data-close-menu]{
+  width:42px !important;
+  height:42px !important;
+  min-width:42px !important;
+  min-height:42px !important;
+  border-color:#c7a25f !important;
+}
+
+/* When logged in, the reference profile block replaces the wordmark visually. */
+.mobile-menu-top:has(.menu-client-profile:not([hidden])) .footer-wordmark{
+  display:none !important;
+}
+
+/* SHOP becomes a quiet section label, followed directly by categories. */
+.mobile-menu nav{
+  padding-top:35px !important;
+}
+.mobile-menu nav::before{
+  top:7px !important;
+  font-size:15px !important;
+  color:#c7a25f !important;
+  letter-spacing:0 !important;
+  font-weight:400 !important;
+}
+.mobile-menu nav a[href="index.html#new-in"],
+.mobile-menu nav a[href="product.html"]{
+  display:none !important;
+}
+.mobile-menu nav a{
+  min-height:64px !important;
+  padding:0 !important;
+  justify-content:flex-start !important;
+  gap:5px !important;
+  font-size:18px !important;
+  font-weight:400 !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
+  border-bottom:1px solid rgba(243,239,230,.13) !important;
+}
+
+/* Mini chevrons stay with the text instead of floating on the far right. */
+.mobile-menu nav a::after{
+  position:static !important;
+  right:auto !important;
+  top:auto !important;
+  transform:none !important;
+  margin-left:1px !important;
+  font-size:19px !important;
+  color:rgba(243,239,230,.92) !important;
+  line-height:1 !important;
+}
+
+/* Buttons stay immediately below navigation, not near the bottom of drawer. */
+.mobile-menu-foot{
+  margin-top:26px !important;
+  margin-bottom:0 !important;
+  padding:0 !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:7px !important;
+}
+.mobile-menu .mobile-utility-btn{
+  min-height:48px !important;
+  font-size:8.5px !important;
+  letter-spacing:.09em !important;
+  border-color:rgba(198,161,94,.46) !important;
+}
+
+@media (max-width:768px){
+  .mobile-menu{
+    width:min(88vw,388px) !important;
+    padding:0 24px calc(24px + env(safe-area-inset-bottom)) !important;
+  }
+  .mobile-menu-top{
+    min-height:101px !important;
+    padding:21px 0 15px !important;
+  }
+  .mobile-menu nav{
+    padding-top:34px !important;
+  }
+  .mobile-menu nav a{
+    min-height:62px !important;
+    font-size:17px !important;
+  }
+  .mobile-menu-foot{
+    margin-top:27px !important;
+  }
+}
+@media (min-width:769px){
+  .mobile-menu{
+    width:min(405px,34vw) !important;
+    min-width:370px !important;
+    padding:0 28px 30px !important;
+  }
+}
+
+/* ---------------- Wishlist drawer ---------------- */
+[data-wishlist-drawer]{
+  background:#fbf8f1 !important;
+}
+[data-wishlist-drawer] .utility-head{
+  min-height:68px !important;
+  padding:15px 24px 13px !important;
+  align-items:flex-start !important;
+  border-bottom:1px solid rgba(54,48,42,.12) !important;
+}
+[data-wishlist-drawer] .utility-head .eyebrow{
+  margin:0 0 4px !important;
+  color:#B28A49 !important;
+  font-size:9px !important;
+  line-height:1 !important;
+  letter-spacing:.16em !important;
+  font-weight:500 !important;
+}
+[data-wishlist-drawer] .utility-head h3{
+  margin:0 !important;
+  font-size:21px !important;
+  line-height:1 !important;
+  letter-spacing:.02em !important;
+  font-weight:400 !important;
+  color:var(--navy) !important;
+}
+[data-wishlist-drawer] .utility-close{
+  width:27px !important;
+  height:27px !important;
+  min-width:27px !important;
+  min-height:27px !important;
+  margin-top:0 !important;
+  border-color:rgba(80,72,63,.38) !important;
+}
+[data-wishlist-drawer] .utility-close svg{
+  width:15px !important;
+  height:15px !important;
+}
+
+/* Position empty wishlist like the reference: upper-middle rather than true viewport center. */
+[data-wishlist-drawer] .utility-body{
+  min-height:calc(100dvh - 68px) !important;
+  padding:0 24px 34px !important;
+}
+[data-wishlist-items]{
+  display:block !important;
+}
+[data-wishlist-items]>.wishlist-empty-state{
+  width:100% !important;
+  max-width:305px !important;
+  margin:63px auto 0 !important;
+  padding:0 !important;
+  transform:none !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  text-align:center !important;
+}
+[data-wishlist-items]>.wishlist-empty-state .empty-heart{
+  width:29px !important;
+  height:29px !important;
+  margin:0 0 22px !important;
+  color:#B28A49 !important;
+}
+[data-wishlist-items]>.wishlist-empty-state .empty-heart svg{
+  width:27px !important;
+  height:27px !important;
+}
+[data-wishlist-items]>.wishlist-empty-state h4{
+  margin:0 0 4px !important;
+  font-size:21px !important;
+  line-height:1.05 !important;
+  letter-spacing:.015em !important;
+  white-space:nowrap !important;
+}
+[data-wishlist-items]>.wishlist-empty-state p{
+  max-width:265px !important;
+  margin:0 !important;
+  font-size:12px !important;
+  line-height:1.35 !important;
+  color:#6a645c !important;
+}
+[data-wishlist-items]>.wishlist-empty-state .btn{
+  min-width:150px !important;
+  min-height:39px !important;
+  margin-top:24px !important;
+  padding:0 18px !important;
+  font-size:8.5px !important;
+  letter-spacing:.14em !important;
+  border-color:#2d596a !important;
+}
+
+@media (max-width:768px){
+  [data-wishlist-drawer]{
+    width:min(86.5vw,368px) !important;
+  }
+  [data-wishlist-drawer] .utility-head{
+    min-height:68px !important;
+    padding:15px 24px 13px !important;
+  }
+  [data-wishlist-drawer] .utility-body{
+    min-height:calc(100dvh - 68px) !important;
+    padding:0 24px calc(30px + env(safe-area-inset-bottom)) !important;
+  }
+  [data-wishlist-items]>.wishlist-empty-state{
+    margin-top:64px !important;
+  }
+}
+@media (min-width:769px){
+  [data-wishlist-drawer]{
+    width:min(430px,36vw) !important;
+    min-width:390px !important;
+  }
+  [data-wishlist-items]>.wishlist-empty-state{
+    margin-top:78px !important;
+  }
+}
+
+
+/* ==========================================================================
+   AVERON — side menu reference correction v38
+   Only the blue side navigation is changed. Wishlist stays untouched.
+   ========================================================================== */
+
+/* Stable left drawer geometry on phones: leave a visible slice of the page
+   on the right, matching the approved reference. */
+@media (max-width:768px){
+  .mobile-menu{
+    inset:0 auto 0 0 !important;
+    left:0 !important;
+    right:auto !important;
+    top:0 !important;
+    bottom:0 !important;
+    width:calc(100vw - 44px) !important;
+    max-width:388px !important;
+    min-width:0 !important;
+    height:100dvh !important;
+    padding:0 24px calc(24px + env(safe-area-inset-bottom)) !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+  }
+
+  /* Reference top block: connected account on the left, close on the right. */
+  .mobile-menu-top{
+    min-height:112px !important;
+    padding:25px 0 18px !important;
+    margin:0 !important;
+  }
+  .menu-client-profile{
+    max-width:calc(100% - 58px) !important;
+  }
+
+  /* When account data exists, there must be no AVERON wordmark behind it. */
+  .mobile-menu-top .menu-client-profile:not([hidden]) + .footer-wordmark{
+    display:none !important;
+  }
+
+  /* SHOP + categories use the compact reference rhythm. */
+  .mobile-menu nav{
+    padding-top:36px !important;
+  }
+  .mobile-menu nav::before{
+    top:8px !important;
+  }
+  .mobile-menu nav a{
+    min-height:62px !important;
+  }
+
+  /* Action buttons stay directly under categories. */
+  .mobile-menu-foot{
+    margin-top:27px !important;
+    padding-top:0 !important;
+  }
+}
+
+/* Desktop uses the same account-first composition, scaled proportionally. */
+@media (min-width:769px){
+  .mobile-menu{
+    inset:0 auto 0 0 !important;
+    left:0 !important;
+    right:auto !important;
+    width:min(405px,34vw) !important;
+    min-width:370px !important;
+    height:100dvh !important;
+  }
+  .mobile-menu-top{
+    min-height:112px !important;
+  }
+  .mobile-menu-top .menu-client-profile:not([hidden]) + .footer-wordmark{
+    display:none !important;
+  }
+}
