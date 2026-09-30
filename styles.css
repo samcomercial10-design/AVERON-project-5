@@ -4727,7 +4727,7 @@ body.checkout-body footer.checkout-footer .checkout-footer-copyright span{color:
   border:0;border-bottom:1px solid var(--grey-line);background:transparent;text-align:left;cursor:pointer
 }
 .account-profile-monogram-ref{
-  width:54px;height:54px;flex:0 0 54px;border:1px solid rgba(180,145,86,.7);display:flex;align-items:center;justify-content:center;
+  width:42px;height:42px;flex:0 0 42px;border:1px solid rgba(180,145,86,.7);display:flex;align-items:center;justify-content:center;
   font-family:var(--font-serif);font-size:18px;letter-spacing:.03em;color:var(--navy)
 }
 .account-profile-copy-ref{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
@@ -4761,7 +4761,7 @@ body.checkout-body footer.checkout-footer .checkout-footer-copyright span{color:
   margin:18px 0 0;font-size:12px;line-height:1.55;color:#8e857b;max-width:44ch
 }
 @media (max-width:768px){
-  .account-profile-monogram-ref{width:50px;height:50px;flex-basis:50px;font-size:17px}
+  .account-profile-monogram-ref{width:42px;height:42px;flex-basis:42px;font-size:16px}
   .account-profile-name-ref{font-size:21px;line-height:1.04}
   .account-profile-email-ref{font-size:12px}
   .account-link-ref{padding:15px 0}
