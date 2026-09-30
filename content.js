@@ -33,6 +33,14 @@
     desktopMinis=clean(source.desktopMinis||S.safeJson(localStorage.getItem(MINI_KEY)||'{}',{}),MINI_DEFAULTS);
     const mobileMiniRaw=source.mobileMinis||S.safeJson(localStorage.getItem(MOBILE_MINI_KEY)||'{}',{});
     mobileMinis=clean(mobileMiniRaw,desktopMinis);
+    // Product selections are semantic content, not artwork. If a mobile editorial
+    // banner has no explicit product selection, inherit the desktop selection.
+    Object.keys(MINI_DEFAULTS).forEach(k=>{
+      if(k.startsWith('category-'))return;
+      if((!Array.isArray(mobileMinis[k].linkedProducts)||!mobileMinis[k].linkedProducts.length)&&Array.isArray(desktopMinis[k]?.linkedProducts)&&desktopMinis[k].linkedProducts.length){
+        mobileMinis[k].linkedProducts=[...desktopMinis[k].linkedProducts];
+      }
+    });
   }
   function backupServerContent(content){
     try{localStorage.setItem(KEY,JSON.stringify(content.desktopContent||{}))}catch(_){}
