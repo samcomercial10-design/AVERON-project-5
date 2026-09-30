@@ -4766,3 +4766,136 @@ body.checkout-body footer.checkout-footer .checkout-footer-copyright span{color:
   .account-profile-email-ref{font-size:12px}
   .account-link-ref{padding:15px 0}
 }
+
+
+/* ==========================================================================
+   AVERON — drawer title + close-button standard v43
+   Search drawer is the reference for title sizing and close-button geometry.
+   ========================================================================== */
+
+/* Shared title scale: match AVERON SEARCH / FIND YOUR NEXT PIECE. */
+.utility-head .eyebrow,
+[data-wishlist-drawer] .utility-head .eyebrow,
+[data-account-drawer] .utility-head .eyebrow{
+  font-size:11px !important;
+  line-height:1 !important;
+  letter-spacing:.22em !important;
+  font-weight:500 !important;
+  margin:0 0 8px !important;
+}
+
+.utility-head h3,
+[data-wishlist-drawer] .utility-head h3,
+[data-account-drawer] .utility-head h3{
+  font-family:var(--font-serif) !important;
+  font-size:26px !important;
+  line-height:1.08 !important;
+  letter-spacing:2px !important;
+  font-weight:400 !important;
+  margin:0 !important;
+  color:var(--navy) !important;
+  text-transform:uppercase !important;
+}
+
+/* Shared header box model for Search / Account / Wishlist. */
+.utility-head,
+[data-wishlist-drawer] .utility-head,
+[data-account-drawer] .utility-head{
+  min-height:112px !important;
+  padding:28px clamp(24px,4vw,42px) !important;
+  display:flex !important;
+  align-items:flex-start !important;
+  justify-content:space-between !important;
+  gap:24px !important;
+  border-bottom:1px solid var(--grey-line) !important;
+  box-sizing:border-box !important;
+}
+
+/* One close-button geometry everywhere. */
+.utility-close,
+.cart-close,
+.mobile-menu-top [data-close-menu]{
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  min-height:38px !important;
+  flex:0 0 38px !important;
+  padding:0 !important;
+  margin:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:0 !important;
+  box-sizing:border-box !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+
+.utility-close,
+.cart-close{
+  border:1px solid var(--grey-line) !important;
+  color:var(--navy) !important;
+}
+
+.utility-close svg,
+.cart-close svg,
+.mobile-menu-top [data-close-menu] svg{
+  width:18px !important;
+  height:18px !important;
+  display:block !important;
+  stroke-width:1.4 !important;
+}
+
+/* Cart header follows the same title/close alignment as utility drawers. */
+.cart-head{
+  min-height:112px !important;
+  padding:28px clamp(24px,4vw,42px) !important;
+  display:flex !important;
+  align-items:flex-start !important;
+  justify-content:space-between !important;
+  gap:24px !important;
+  border-bottom:1px solid var(--grey-line) !important;
+  box-sizing:border-box !important;
+}
+.cart-head h3{
+  margin:0 !important;
+  font-family:var(--font-serif) !important;
+  font-size:26px !important;
+  line-height:1.08 !important;
+  letter-spacing:2px !important;
+  font-weight:400 !important;
+  color:var(--navy) !important;
+  text-transform:uppercase !important;
+}
+
+/* Side-menu close keeps its gold treatment, but adopts the same size. */
+.mobile-menu-top [data-close-menu]{
+  border:1px solid #c7a25f !important;
+  color:var(--warm-white) !important;
+}
+
+/* Preserve the authenticated profile drawer reference: its custom profile
+   header intentionally replaces the generic utility header. */
+[data-account-drawer].account-authenticated .utility-head{
+  display:none !important;
+}
+
+@media (max-width:768px){
+  .utility-head,
+  [data-wishlist-drawer] .utility-head,
+  [data-account-drawer] .utility-head,
+  .cart-head{
+    min-height:104px !important;
+    padding:24px 24px !important;
+  }
+
+  .utility-close,
+  .cart-close,
+  .mobile-menu-top [data-close-menu]{
+    width:38px !important;
+    height:38px !important;
+    min-width:38px !important;
+    min-height:38px !important;
+    flex-basis:38px !important;
+  }
+}

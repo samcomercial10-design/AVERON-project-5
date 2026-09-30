@@ -66,3 +66,14 @@ test('side menu action row does not clip the wishlist button on mobile',()=>{
   assert.match(css,/\.mobile-menu-foot\{[\s\S]*?width:100% !important;[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\) !important;/);
   assert.match(css,/\.mobile-menu \.mobile-utility-btn\{[\s\S]*?width:100% !important;[\s\S]*?min-width:0 !important;/);
 });
+
+
+test('drawer title + close-button standard v43 matches search heading scale and close geometry',()=>{
+  const root=path.join(__dirname,'..');
+  const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
+  assert.match(css,/drawer title \+ close-button standard v43/);
+  assert.match(css,/font-size:11px !important/);
+  assert.match(css,/font-size:26px !important/);
+  assert.match(css,/\.utility-close,[\s\S]*?\.cart-close,[\s\S]*?width:38px !important/);
+  assert.match(css,/\.cart-head\{[\s\S]*?min-height:112px !important/);
+});
