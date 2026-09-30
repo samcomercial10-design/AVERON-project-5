@@ -4687,3 +4687,30 @@ body.checkout-body footer.checkout-footer .checkout-footer-copyright span{color:
     display:none !important;
   }
 }
+
+
+/* ==========================================================================
+   AVERON — side menu action-row overflow fix v39
+   Keeps the approved v38 menu intact; only fixes the clipped right button.
+   ========================================================================== */
+@media (max-width:768px){
+  .mobile-menu{
+    box-sizing:border-box !important;
+  }
+
+  .mobile-menu-foot{
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:7px !important;
+    overflow:visible !important;
+  }
+
+  .mobile-menu .mobile-utility-btn{
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+}

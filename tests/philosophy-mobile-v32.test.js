@@ -57,3 +57,12 @@ test('side menu reference correction v38 refreshes account profile on every open
   assert.match(css,/side menu reference correction v38/);
   assert.match(css,/width:calc\(100vw - 44px\) !important/);
 });
+
+
+test('side menu action row does not clip the wishlist button on mobile',()=>{
+  const root=path.join(__dirname,'..');
+  const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
+  assert.match(css,/side menu action-row overflow fix v39/);
+  assert.match(css,/\.mobile-menu-foot\{[\s\S]*?width:100% !important;[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\) !important;/);
+  assert.match(css,/\.mobile-menu \.mobile-utility-btn\{[\s\S]*?width:100% !important;[\s\S]*?min-width:0 !important;/);
+});
