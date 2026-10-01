@@ -101,18 +101,36 @@
     });
   }
 
-  function addToCart(raw){
+  function addToCart(raw,options={}){
     const enriched={...(raw||{})};
     if(!enriched.image)enriched.image=catalogueImage(enriched.id);
-    const item=S.cartItem(enriched); if(!item)return;
+    const item=S.cartItem(enriched); if(!item)return false;
     const existing=state.cart.find(i=>i.id===item.id&&i.size===item.size&&i.colour===item.colour);
     if(existing){
       existing.qty=S.qty(existing.qty+item.qty);
       if(!existing.image&&item.image)existing.image=item.image;
     }else state.cart.push(item);
-    persist();renderCart();openCart();
+    persist();renderCart();
+    if(options.openCart!==false)openCart();
+    return true;
   }
   window.AVERON_addToCart=addToCart;
+
+  async function buyNow(raw){
+    if(!addToCart(raw,{openCart:false}))return false;
+    /* Keep the site's existing account gate, but only after the selected
+       product has been persisted so checkout can render it immediately. */
+    if(typeof window.AVERON_loadAccountSession==='function'){
+      const session=await window.AVERON_loadAccountSession().catch(()=>null);
+      if(!session?.authenticated&&typeof window.AVERON_openLogin==='function'){
+        await window.AVERON_openLogin('checkout.html');
+        return true;
+      }
+    }
+    window.location.assign('checkout.html');
+    return true;
+  }
+  window.AVERON_buyNow=buyNow;
 
   function syncWishlistUI(){
     document.querySelectorAll('[data-wishlist-btn]').forEach(btn=>{

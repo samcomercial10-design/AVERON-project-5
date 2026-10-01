@@ -352,7 +352,7 @@ header.site{
 
 /* ---------- Footer ---------- */
 footer.site{ background:var(--navy); color:rgba(251,249,244,.78); padding:90px 0 0; }
-.footer-grid{ display:grid; grid-template-columns:1.4fr repeat(4,1fr); gap:40px; padding-bottom:70px; }
+.footer-grid{ display:grid; grid-template-columns:1.4fr repeat(3,1fr); gap:40px; padding-bottom:70px; }
 .footer-col h5{ color:var(--gold-soft); font-size:11px; letter-spacing:.14em; text-transform:uppercase; margin-bottom:20px; font-weight:600; }
 .footer-col a{ display:block; font-size:13px; color:rgba(251,249,244,.72); padding:6px 0; transition:color .25s; }
 .footer-col a:hover{ color:var(--warm-white); }
@@ -367,7 +367,7 @@ footer.site{ background:var(--navy); color:rgba(251,249,244,.78); padding:90px 0
 .footer-bottom-left{ display:flex; align-items:center; gap:14px; }
 .footer-bottom-left svg{ width:22px; height:22px; }
 .footer-bottom .word{ font-family:var(--font-serif); letter-spacing:2px; font-size:14px; }
-.footer-locale{ display:flex; gap:18px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(251,249,244,.55); }
+.footer-locale{ display:flex; gap:18px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(251,249,244,.55); justify-content:flex-start; }
 
 /* ---------- Cart drawer ---------- */
 .overlay{

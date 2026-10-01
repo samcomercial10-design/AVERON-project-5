@@ -77,3 +77,47 @@ test('drawer title + close-button standard v43 matches search heading scale and 
   assert.match(css,/\.utility-close,[\s\S]*?\.cart-close,[\s\S]*?width:38px !important/);
   assert.match(css,/\.cart-head\{[\s\S]*?min-height:112px !important/);
 });
+
+
+test('footer cleanup v47 removes deprecated links and location-specific copy',()=>{
+  const root=path.join(__dirname,'..');
+  const files=['index.html','clothing.html','jackets.html','trousers.html','accessories.html','product.html','edit.html'].filter(f=>fs.existsSync(path.join(root,f)));
+  for(const f of files){
+    const html=fs.readFileSync(path.join(root,f),'utf8');
+    assert.doesNotMatch(html,/>Bestsellers<\/a>/);
+    assert.doesNotMatch(html,/>FAQ<\/a>/);
+    assert.doesNotMatch(html,/>About<\/h5>/);
+    assert.doesNotMatch(html,/Designed in London for everyday confidence\./);
+  }
+  const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.match(home,/Timeless menswear for everyday confidence\. Refined essentials, designed to move effortlessly through modern life\./);
+});
+
+
+test('footer locale cleanup v48 keeps only copyright in footer bottom',()=>{
+  const rootDir = path.join(__dirname,'..');
+  const files = ['index.html','clothing.html','jackets.html','trousers.html','accessories.html','product.html','checkout.html','wishlist.html'].filter(f=>fs.existsSync(path.join(rootDir,f)));
+  for(const f of files){
+    const html=fs.readFileSync(path.join(rootDir,f),'utf8');
+    const m = html.match(/<div class="footer-locale">([\s\S]*?)<\/div>/i);
+    if(!m) continue;
+    assert.doesNotMatch(m[1], /United Kingdom/i);
+    assert.doesNotMatch(m[1], /£\s*GBP/i);
+    assert.match(m[1], /2026 AVERON/i);
+  }
+});
+
+
+test('buy now persists selected product before checkout v49',()=>{
+  const root=path.join(__dirname,'..');
+  const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
+  const pdp=fs.readFileSync(path.join(root,'product-page.js'),'utf8');
+  assert.match(app,/function addToCart\(raw,options=\{\}\)/);
+  assert.match(app,/if\(options\.openCart!==false\)openCart\(\)/);
+  assert.match(app,/async function buyNow\(raw\)/);
+  assert.match(app,/addToCart\(raw,\{openCart:false\}\)/);
+  assert.match(app,/window\.AVERON_buyNow=buyNow/);
+  assert.match(pdp,/function currentPurchasePayload\(\)/);
+  assert.match(pdp,/buyNowBtn\.dataset\.authBypass='true'/);
+  assert.match(pdp,/window\.AVERON_buyNow\?\.\(currentPurchasePayload\(\)\)/);
+});

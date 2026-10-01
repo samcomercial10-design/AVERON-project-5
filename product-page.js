@@ -105,7 +105,11 @@
   renderColours();renderSizes();
 
   let qty=1;const q=document.getElementById('qtyVal');document.getElementById('qtyInc')?.addEventListener('click',()=>{qty=Math.min(10,qty+1);if(q)q.textContent=String(qty)});document.getElementById('qtyDec')?.addEventListener('click',()=>{qty=Math.max(1,qty-1);if(q)q.textContent=String(qty)});
-  document.getElementById('addToBagBtn')?.addEventListener('click',()=>window.AVERON_addToCart?.({id:p.id,name:p.name,price:p.price,colour:selectedColour,size:document.querySelector('[data-size].active')?.dataset.size||'',qty,image:imageryForColour(selectedColour).cover}));document.getElementById('stickyAddBtn')?.addEventListener('click',()=>document.getElementById('addToBagBtn')?.click());const stickyName=document.querySelector('[data-sticky-name]');if(stickyName)stickyName.textContent=p.name;const stickyPrice=document.querySelector('.sticky-add .price');if(stickyPrice)stickyPrice.textContent='£'+p.price.toFixed(2);
+  function currentPurchasePayload(){return {id:p.id,name:p.name,price:p.price,colour:selectedColour,size:document.querySelector('[data-size].active')?.dataset.size||'',qty,image:imageryForColour(selectedColour).cover}}
+  document.getElementById('addToBagBtn')?.addEventListener('click',()=>window.AVERON_addToCart?.(currentPurchasePayload()));
+  const buyNowBtn=document.querySelector('[data-layout-id="product-buy-now"]');
+  if(buyNowBtn){buyNowBtn.dataset.authBypass='true';buyNowBtn.addEventListener('click',e=>{e.preventDefault();window.AVERON_buyNow?.(currentPurchasePayload())})}
+  document.getElementById('stickyAddBtn')?.addEventListener('click',()=>document.getElementById('addToBagBtn')?.click());const stickyName=document.querySelector('[data-sticky-name]');if(stickyName)stickyName.textContent=p.name;const stickyPrice=document.querySelector('.sticky-add .price');if(stickyPrice)stickyPrice.textContent='£'+p.price.toFixed(2);
 
 
   function makeProductRecommendationCard(prod){
