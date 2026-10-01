@@ -108,15 +108,18 @@ test('footer locale cleanup v48 keeps only copyright in footer bottom',()=>{
 });
 
 
-test('buy now persists selected product before checkout v49',()=>{
+test('buy now uses an independent one-off checkout payload',()=>{
   const root=path.join(__dirname,'..');
   const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
+  const stripe=fs.readFileSync(path.join(root,'stripe-checkout.js'),'utf8');
   const pdp=fs.readFileSync(path.join(root,'product-page.js'),'utf8');
-  assert.match(app,/function addToCart\(raw,options=\{\}\)/);
-  assert.match(app,/if\(options\.openCart!==false\)openCart\(\)/);
-  assert.match(app,/async function buyNow\(raw\)/);
-  assert.match(app,/addToCart\(raw,\{openCart:false\}\)/);
-  assert.match(app,/window\.AVERON_buyNow=buyNow/);
+  assert.match(app,/const BUY_NOW_KEY='averon_buy_now'/);
+  assert.match(app,/sessionStorage\.setItem\(BUY_NOW_KEY,JSON\.stringify\(\[item\]\)\)/);
+  assert.doesNotMatch(app,/async function buyNow\(raw\)\{[\s\S]{0,500}addToCart\(raw/);
+  assert.match(app,/const target='checkout\.html\?buy_now=1'/);
+  assert.match(app,/function checkoutItems\(\)/);
+  assert.match(stripe,/function getCheckoutItems\(\)/);
+  assert.match(stripe,/sessionStorage\.getItem\(BUY_NOW_KEY\)/);
   assert.match(pdp,/function currentPurchasePayload\(\)/);
   assert.match(pdp,/buyNowBtn\.dataset\.authBypass='true'/);
   assert.match(pdp,/window\.AVERON_buyNow\?\.\(currentPurchasePayload\(\)\)/);

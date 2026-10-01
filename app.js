@@ -16,7 +16,16 @@
     } catch (_) {}
   }
   function money(n){ return '£' + S.price(n).toFixed(2); }
-  function subtotal(){ return state.cart.reduce((sum,item)=>sum + S.price(item.price)*S.qty(item.qty),0); }
+  const BUY_NOW_KEY='averon_buy_now';
+  function isBuyNowCheckout(){
+    try{return document.body?.classList.contains('checkout-body')&&new URLSearchParams(location.search).get('buy_now')==='1'}catch(_){return false}
+  }
+  function buyNowItems(){
+    if(!isBuyNowCheckout())return [];
+    try{return S.cart(S.safeJson(sessionStorage.getItem(BUY_NOW_KEY)||'[]',[]))}catch(_){return []}
+  }
+  function checkoutItems(){const direct=buyNowItems();return direct.length?direct:state.cart}
+  function subtotal(items=state.cart){ return items.reduce((sum,item)=>sum + S.price(item.price)*S.qty(item.qty),0); }
 
   function phThumb(){
     const ph=S.el('div','ph light');
@@ -49,7 +58,8 @@
     /* Totals and checkout summary must render even on pages that do not include
        the cart drawer (notably checkout.html). Previously this function returned
        early when [data-cart-items] was absent, leaving checkout at £0.00. */
-    const sub=subtotal(), remaining=Math.max(0,FREE_DELIVERY-sub), pct=Math.min(100,(sub/FREE_DELIVERY)*100);
+    const purchaseItems=checkoutItems();
+    const sub=subtotal(purchaseItems), remaining=Math.max(0,FREE_DELIVERY-sub), pct=Math.min(100,(sub/FREE_DELIVERY)*100);
     const delivery=sub===0?0:(sub>=FREE_DELIVERY?0:4.95);
     const cartCount=state.cart.reduce((s,i)=>s+i.qty,0);
     document.querySelectorAll('[data-cart-count]').forEach(node=>{node.textContent=String(cartCount);node.style.display='flex'});
@@ -87,8 +97,9 @@
 
   function renderCheckoutSummary(){
     const box=document.querySelector('[data-order-lines]'); if(!box)return; box.replaceChildren();
-    if(!state.cart.length){const p=S.el('p','body','Your bag is empty.');p.style.padding='10px 0';box.appendChild(p);return;}
-    state.cart.forEach(item=>{
+    const items=checkoutItems();
+    if(!items.length){const p=S.el('p','body','Your bag is empty.');p.style.padding='10px 0';box.appendChild(p);return;}
+    items.forEach(item=>{
       const row=S.el('div','order-line checkout-summary-line');
       const qty=S.el('span','checkout-summary-qty',`${item.qty}x`);
       const copy=S.el('div','order-line-info checkout-summary-copy');
@@ -117,17 +128,21 @@
   window.AVERON_addToCart=addToCart;
 
   async function buyNow(raw){
-    if(!addToCart(raw,{openCart:false}))return false;
-    /* Keep the site's existing account gate, but only after the selected
-       product has been persisted so checkout can render it immediately. */
+    const enriched={...(raw||{})};
+    if(!enriched.image)enriched.image=catalogueImage(enriched.id);
+    const item=S.cartItem(enriched); if(!item)return false;
+    /* BUY NOW is intentionally independent from the bag. Store a one-off
+       checkout payload in sessionStorage and never mutate averon_cart. */
+    try{sessionStorage.setItem(BUY_NOW_KEY,JSON.stringify([item]))}catch(_){return false}
+    const target='checkout.html?buy_now=1';
     if(typeof window.AVERON_loadAccountSession==='function'){
       const session=await window.AVERON_loadAccountSession().catch(()=>null);
       if(!session?.authenticated&&typeof window.AVERON_openLogin==='function'){
-        await window.AVERON_openLogin('checkout.html');
+        await window.AVERON_openLogin(target);
         return true;
       }
     }
-    window.location.assign('checkout.html');
+    window.location.assign(target);
     return true;
   }
   window.AVERON_buyNow=buyNow;
