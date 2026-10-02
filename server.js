@@ -1052,7 +1052,7 @@ const SITE_LAYOUT_FILE = path.join(__dirname, 'site-layout.server.json');
 function siteContentImage(value){
   const v=String(value||'').trim();
   if(!v)return '';
-  if(v.length>3_200_000)return '';
+  if(v.length>4_500_000)return '';
   if(/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=\s]+$/i.test(v))return v;
   if(/^(?:\.\/)?assets\/[A-Za-z0-9._/-]+$/.test(v))return v;
   return '';
@@ -1251,6 +1251,32 @@ app.put('/api/admin/site-content',(req,res)=>{
   }catch(err){
     console.error('Admin site content save failed:',err);
     return res.status(500).json({error:'Could not persist banner content on the server.'});
+  }
+});
+
+app.put('/api/admin/site-content/mini',(req,res)=>{
+  try{
+    const device=req.body?.device==='mobile'?'mobile':'desktop';
+    const key=safeText(req.body?.key,48);
+    const allowed=new Set(['intro','category-clothing','category-jackets','category-trousers','category-accessories','city-edit','weekend-edit']);
+    if(!allowed.has(key))return res.status(400).json({error:'Invalid mini-banner slot.'});
+    const snapshot=sanitizeSiteContentPayload(req.body?.snapshot||{});
+    const current=readSiteContent()||snapshot;
+    const group=device==='mobile'?'mobileMinis':'desktopMinis';
+    const otherGroup=device==='mobile'?'desktopMinis':'mobileMinis';
+    current[group]=current[group]&&typeof current[group]==='object'?current[group]:{};
+    current[otherGroup]=current[otherGroup]&&typeof current[otherGroup]==='object'?current[otherGroup]:{};
+    const entry=sanitizeSiteContentEntry(req.body?.entry||{},false);
+    current[group][key]=entry;
+    if(req.body?.syncProducts===true && !key.startsWith('category-')){
+      const other=current[otherGroup][key]&&typeof current[otherGroup][key]==='object'?current[otherGroup][key]:{};
+      current[otherGroup][key]={...other,linkedProducts:[...(entry.linkedProducts||[])],buttonLink:entry.linkedProducts?.length?`edit.html?edit=${encodeURIComponent(key)}`:siteContentLink(other.buttonLink||'')};
+    }
+    const saved=writeSiteContent(current);
+    return res.json({ok:true,content:saved,entry:saved[group]?.[key]||null});
+  }catch(err){
+    console.error('Admin mini-banner save failed:',err);
+    return res.status(500).json({error:'Could not persist mini-banner content on the server.'});
   }
 });
 

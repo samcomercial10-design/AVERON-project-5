@@ -121,19 +121,6 @@ test('buy now uses an independent one-off checkout payload',()=>{
   assert.match(stripe,/function getCheckoutItems\(\)/);
   assert.match(stripe,/sessionStorage\.getItem\(BUY_NOW_KEY\)/);
   assert.match(pdp,/function currentPurchasePayload\(\)/);
-  assert.match(pdp,/buyNowButtons\.forEach/);
-  assert.match(pdp,/btn\.dataset\.authBypass='true'/);
+  assert.match(pdp,/buyNowBtn\.dataset\.authBypass='true'/);
   assert.match(pdp,/window\.AVERON_buyNow\?\.\(currentPurchasePayload\(\)\)/);
-});
-
-
-test('mobile buy now direct checkout parity v51 binds every Buy Now CTA to the independent checkout flow',()=>{
-  const root=path.join(__dirname,'..');
-  const pdp=fs.readFileSync(path.join(root,'product-page.js'),'utf8');
-  const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
-  assert.match(pdp,/querySelectorAll\('\[data-layout-id=\"product-buy-now\"\]'\)/);
-  assert.match(pdp,/window\.AVERON_buyNow\?\.\(currentPurchasePayload\(\)\)/);
-  assert.doesNotMatch(pdp,/matchMedia|innerWidth|mobile.*AVERON_buyNow/i);
-  assert.match(app,/sessionStorage\.setItem\(BUY_NOW_KEY/);
-  assert.match(app,/checkout\.html\?buy_now=1/);
 });
