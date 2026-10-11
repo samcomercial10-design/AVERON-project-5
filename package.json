@@ -12,7 +12,8 @@
     "deploy:verify": "node scripts/post-deploy-check.js",
     "build": "node scripts/build-public.js",
     "prestart": "npm run build",
-    "predev": "npm run build"
+    "predev": "npm run build",
+    "production:check": "node scripts/production-preflight.js"
   },
   "engines": {
     "node": ">=24"
