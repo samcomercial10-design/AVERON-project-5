@@ -4,14 +4,7 @@
   const S=window.AVERON_SECURITY;
   if(!S)return;
 
-  const BUY_NOW_KEY='averon_buy_now';
-  function isBuyNowCheckout(){try{return new URLSearchParams(location.search).get('buy_now')==='1'}catch(_){return false}}
-  function getCheckoutItems(){
-    if(isBuyNowCheckout()){
-      try{const direct=S.cart(S.safeJson(sessionStorage.getItem(BUY_NOW_KEY)||'[]',[]));if(direct.length)return direct}catch(_){}
-    }
-    return S.cart(S.safeJson(localStorage.getItem('averon_cart')||'[]',[]));
-  }
+  function getCart(){return S.cart(S.safeJson(localStorage.getItem('averon_cart')||'[]',[]));}
   function setStatus(message,isError){
     const node=document.querySelector('[data-checkout-status]');
     if(!node)return;
@@ -26,7 +19,7 @@
     if(new URLSearchParams(location.search).get('cancelled')==='1') setStatus('Payment was cancelled. Your bag is still here.',false);
 
     button.addEventListener('click',async()=>{
-      const cart=getCheckoutItems();
+      const cart=getCart();
       if(!cart.length){setStatus('Your bag is empty.',true);return;}
       button.disabled=true;
       button.setAttribute('aria-busy','true');
@@ -37,9 +30,8 @@
         const authResponse=await fetch('/api/auth/session',{headers:{Accept:'application/json'},cache:'no-store'});
         const auth=await authResponse.json().catch(()=>({}));
         if(!auth.authenticated){
-          const next=isBuyNowCheckout()?'checkout.html?buy_now=1':'checkout.html';
-          sessionStorage.setItem('averon_login_return',next);
-          location.assign('index.html?account=login&next='+encodeURIComponent(next));
+          sessionStorage.setItem('averon_login_return','checkout.html');
+          location.assign('index.html?account=login&next=checkout.html');
           return;
         }
         const cartKey=JSON.stringify(cart.map(i=>({id:i.id,qty:i.qty,size:i.size,colour:i.colour})));
