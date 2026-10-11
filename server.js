@@ -12,8 +12,16 @@ const { performance } = require('perf_hooks');
 const observability = require('./observability');
 observability.installStructuredConsole();
 const IS_PRODUCTION=String(process.env.NODE_ENV||'').toLowerCase()==='production';
-if(IS_PRODUCTION&&!String(process.env.AVERON_DATA_DIR||'').trim())throw new Error('Production requires AVERON_DATA_DIR pointing to a private persistent volume.');
+const RAW_DEPLOY_MODE=String(process.env.AVERON_DEPLOY_MODE||'').trim().toLowerCase();
+const AVERON_DEPLOY_MODE=['test','production','development'].includes(RAW_DEPLOY_MODE)
+  ?RAW_DEPLOY_MODE
+  :(IS_PRODUCTION?'production':'development');
+const REQUIRE_PERSISTENT_DATA=AVERON_DEPLOY_MODE==='production';
+if(REQUIRE_PERSISTENT_DATA&&!String(process.env.AVERON_DATA_DIR||'').trim())throw new Error('Production deploy mode requires AVERON_DATA_DIR pointing to a private persistent volume.');
 const DATA_DIR=process.env.AVERON_DATA_DIR?path.resolve(process.env.AVERON_DATA_DIR):__dirname;
+if(AVERON_DEPLOY_MODE==='test'&&!process.env.AVERON_DATA_DIR){
+  console.warn('[AVERON] TEST deploy mode: using ephemeral project storage. Data can be lost on redeploy/restart.');
+}
 if(['public','assets'].some(name=>DATA_DIR===path.join(__dirname,name)||DATA_DIR.startsWith(path.join(__dirname,name)+path.sep)))throw new Error('AVERON_DATA_DIR must be outside public and assets.');
 fs.mkdirSync(DATA_DIR,{recursive:true});
 const dataFile=name=>path.join(DATA_DIR,name);

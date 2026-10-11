@@ -28,3 +28,16 @@ test('production preflight fails closed when production configuration is incompl
  fs.rmSync(tmp,{recursive:true,force:true});
  assert.notEqual(r.status,0);assert.match(r.stderr,/FAILED/);
 });
+
+
+test('test deploy mode can start without AVERON_DATA_DIR persistence gate',()=>{
+  const server=fs.readFileSync(path.join(root,'server.js'),'utf8');
+  assert.match(server,/AVERON_DEPLOY_MODE/);
+  assert.match(server,/REQUIRE_PERSISTENT_DATA=AVERON_DEPLOY_MODE==='production'/);
+  assert.match(server,/AVERON_DEPLOY_MODE==='test'/);
+});
+
+test('production deploy mode still requires persistent AVERON_DATA_DIR',()=>{
+  const server=fs.readFileSync(path.join(root,'server.js'),'utf8');
+  assert.match(server,/Production deploy mode requires AVERON_DATA_DIR/);
+});
