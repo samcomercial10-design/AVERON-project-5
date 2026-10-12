@@ -15,7 +15,10 @@ const IS_PRODUCTION=String(process.env.NODE_ENV||'').toLowerCase()==='production
 const RAW_DEPLOY_MODE=String(process.env.AVERON_DEPLOY_MODE||'').trim().toLowerCase();
 const AVERON_DEPLOY_MODE=['test','production','development'].includes(RAW_DEPLOY_MODE)
   ?RAW_DEPLOY_MODE
-  :(IS_PRODUCTION?'production':'development');
+  :(IS_PRODUCTION?'test':'development');
+if(IS_PRODUCTION&&!RAW_DEPLOY_MODE){
+  console.warn('[AVERON] AVERON_DEPLOY_MODE is not set; defaulting to TEST mode. Set AVERON_DEPLOY_MODE=production for the real launch.');
+}
 const REQUIRE_PERSISTENT_DATA=AVERON_DEPLOY_MODE==='production';
 if(REQUIRE_PERSISTENT_DATA&&!String(process.env.AVERON_DATA_DIR||'').trim())throw new Error('Production deploy mode requires AVERON_DATA_DIR pointing to a private persistent volume.');
 const DATA_DIR=process.env.AVERON_DATA_DIR?path.resolve(process.env.AVERON_DATA_DIR):__dirname;
@@ -40,7 +43,7 @@ const port = Number(process.env.PORT || 4242);
 const proxyHops=Number(process.env.TRUST_PROXY_HOPS||0);
 if(!Number.isInteger(proxyHops)||proxyHops<0||proxyHops>5)throw new Error('TRUST_PROXY_HOPS must be between 0 and 5.');
 if(proxyHops)app.set('trust proxy',proxyHops);
-if(process.env.NODE_ENV==='production'&&!/^https:\/\/[^/\s]+$/.test(String(process.env.SITE_URL||'').replace(/\/$/,'')))throw new Error('Production requires SITE_URL with the canonical HTTPS origin.');
+if(AVERON_DEPLOY_MODE==='production'&&!/^https:\/\/[^/\s]+$/.test(String(process.env.SITE_URL||'').replace(/\/$/,'')))throw new Error('Production deploy mode requires SITE_URL with the canonical HTTPS origin.');
 const ADMIN_COOKIE='averon_admin_session';
 const CUSTOMER_ACCESS_COOKIE='averon_customer_access';
 const CUSTOMER_REFRESH_COOKIE='averon_customer_refresh';
@@ -272,7 +275,13 @@ async function getCustomerAuth(req,res,{refresh=true}={}){
 function requestOriginCandidates(req){
   const configured=String(process.env.SITE_URL||'').trim().replace(/\/$/,'');
   if(configured)return [configured];
-  if(process.env.NODE_ENV==='production')return [];
+  if(AVERON_DEPLOY_MODE==='production')return [];
+  if(AVERON_DEPLOY_MODE==='test'){
+    const forwarded=String(req.get('x-forwarded-proto')||'').split(',')[0].trim().toLowerCase();
+    const proto=forwarded==='https'?'https':req.protocol;
+    const host=String(req.get('host')||'').trim();
+    return host?[`${proto}://${host}`]:[];
+  }
   return isLocalRequest(req)?[`${req.protocol}://${req.get('host')}`]:[];
 }
 function sameOriginCustomerRequest(req){
@@ -874,7 +883,7 @@ function databaseHealth() {
 function healthPayload() {
   const database = databaseHealth();
   const memory = process.memoryUsage();
-  const production = String(process.env.NODE_ENV||'').toLowerCase()==='production';
+  const production = AVERON_DEPLOY_MODE==='production';
   const checks = {
     database,
     stripe: {status: stripe ? 'configured' : 'not_configured'},

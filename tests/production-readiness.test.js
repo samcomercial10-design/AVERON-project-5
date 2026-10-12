@@ -41,3 +41,17 @@ test('production deploy mode still requires persistent AVERON_DATA_DIR',()=>{
   const server=fs.readFileSync(path.join(root,'server.js'),'utf8');
   assert.match(server,/Production deploy mode requires AVERON_DATA_DIR/);
 });
+
+
+test('test deploy mode also bypasses final SITE_URL gate and production health dependencies',()=>{
+  const server=fs.readFileSync(path.join(root,'server.js'),'utf8');
+  assert.match(server,/AVERON_DEPLOY_MODE==='production'.*SITE_URL/s);
+  assert.match(server,/const production = AVERON_DEPLOY_MODE==='production'/);
+  assert.match(server,/AVERON_DEPLOY_MODE==='test'/);
+});
+
+test('NODE_ENV production defaults to deploy test mode unless explicitly promoted',()=>{
+  const server=fs.readFileSync(path.join(root,'server.js'),'utf8');
+  assert.match(server,/\(IS_PRODUCTION\?'test':'development'\)/);
+  assert.match(server,/Set AVERON_DEPLOY_MODE=production for the real launch/);
+});
